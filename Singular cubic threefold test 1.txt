@@ -1,0 +1,24 @@
+range_max = 10;
+q = 11;
+while 1:
+    c = [ZZ.random_element(-range_max,1+range_max) for _ in range(6)];
+#     c = [2,-1,-4,3,3,-1]
+    D = Delta(c[0],c[1],c[2],c[3],c[4],c[5]);
+    if D%q != 0:
+        # print("Ignore; (V_c)_{F_q} is smooth.")
+        continue;
+    if LazyErrorRatio(c[0],c[1],c[2],c[3],c[4],c[5],q) in [0,-1,2,3,-4,-3,-5,4,5,-7,9,-2,7,8,-6,-9,-8,1]:
+        print(c);
+        if CleanLineErrorRatio(c[0],c[1],c[2],c[3],c[4],c[5],q) == LazyErrorRatio(c[0],c[1],c[2],c[3],c[4],c[5],q):
+            continue;
+    print("Hyperplane section:", c);
+    if D == 0:
+        print("Discriminant:", D);
+    if D != 0:
+        print("Discriminant:", factor(D));
+    print("LazyErrorRatio(c,q):", LazyErrorRatio(c[0],c[1],c[2],c[3],c[4],c[5],q));
+    print("CleanLineErrorRatio(c,q):", CleanLineErrorRatio(c[0],c[1],c[2],c[3],c[4],c[5],q));
+
+---
+
+Results (12/23/20--12/24/20, several hours around midnight): See rows 4--46 of excel file.
