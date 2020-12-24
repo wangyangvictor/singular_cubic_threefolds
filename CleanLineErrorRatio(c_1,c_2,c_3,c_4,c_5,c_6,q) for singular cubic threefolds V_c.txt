@@ -23,7 +23,7 @@ def CleanLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
     # print(R((c_1*c_5 - c_3*c_6)/(c_1*c_6 - c_6^2)))
     # print(R((c_3 - c_5)/(c_1 - c_6)))
     y_1 = (x_1 - R((c_2 - c_4)/(c_1 - c_6))*(x_2-x_4) - R((c_3 - c_5)/(c_1 - c_6))*(x_3-x_5))
-    y_6 = (R(c_1/c_6)*x_1 + R((c_1*c_4 - c_2*c_6)/(c_1*c_6 - c_6^2))*x_2 + R((c_2 - c_4)/(c_1 - c_6))*x_4 + R((c_1*c_5 - c_3*c_6)/(c_1*c_6 - c_6^2))*x_3 + R((c_3 - c_5)/(c_1 - c_6))*x_5)
+    y_2 = (R(c_1/c_6)*x_1 + R((c_1*c_4 - c_2*c_6)/(c_1*c_6 - c_6^2))*x_2 + R((c_2 - c_4)/(c_1 - c_6))*x_4 + R((c_1*c_5 - c_3*c_6)/(c_1*c_6 - c_6^2))*x_3 + R((c_3 - c_5)/(c_1 - c_6))*x_5)
     # Note that the formation of y_1,y_2 may yield division-by-zero errors if c_6*(c_1-c_6) is 0 in k.
     # print(y_1^3)
     # print(y_2^3)
