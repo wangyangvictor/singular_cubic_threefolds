@@ -22,3 +22,5 @@ while 1:
 ---
 
 Results (12/23/20--12/24/20, several hours around midnight): See rows 4--46 of excel file.
+
+EDIT: See also row 47 ([-6, -7, 4, -7, 4, 1] gives -11).

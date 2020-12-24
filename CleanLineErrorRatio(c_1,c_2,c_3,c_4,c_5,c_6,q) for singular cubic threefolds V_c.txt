@@ -9,63 +9,22 @@ def CleanLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
     k = GF(q,'a')
     R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5');
     x_1, x_2, x_3, x_4, x_5 = R.gens();
-
-    # Originally we are interested in x'_1^3+...+x'_6^3 = c_1x'_1+...+c_6x'_6=0,
-    # which is essentially a cubic equation "F=0" in 5 variables (originally x'_1,...,x'_5, say).
-    # We write each x'_i as a linear combination of x_1,...,x_5,
-    # chosen such that F(0,0,0,x_4,x_5) == 0 identically
-    # (i.e. so that F vanishes on the rational line x_1=x_2=x_3=0).
+#     Originally we are interested in x'_1^3+...+x'_6^3 = c_1x'_1+...+c_6x'_6=0,
+#     which is essentially a cubic equation "F=0" in 5 variables (originally x'_1,...,x'_5, say).
+#     We write each x'_i as a linear combination of x_1,...,x_5,
+#     chosen such that F(0,0,0,x_4,x_5) == 0 identically
+#     (i.e. so that F vanishes on the rational line x_1=x_2=x_3=0).
     y_1 = (x_1 - R((c_2 - c_4)/(c_1 - c_6))*(x_2-x_4) - R((c_3 - c_5)/(c_1 - c_6))*(x_3-x_5))
     y_2 = (R(c_1/c_6)*x_1 + R((c_1*c_4 - c_2*c_6)/(c_1*c_6 - c_6^2))*x_2 + R((c_2 - c_4)/(c_1 - c_6))*x_4 + R((c_1*c_5 - c_3*c_6)/(c_1*c_6 - c_6^2))*x_3 + R((c_3 - c_5)/(c_1 - c_6))*x_5)
-    # Note that the formation of y_1,y_2 may yield division-by-zero errors if c_6*(c_1-c_6) is 0 in k.
+#     Note that the formation of y_1,y_2 may yield division-by-zero errors if c_6*(c_1-c_6) is 0 in k.
     F = (y_1^3 + (x_2-x_4)^3 + x_4^3 + (x_3-x_5)^3 + x_5^3 - y_2^3);
-    # Here c_1*x'_1 + c_2*x'_2 + c_3*x'_3 + c_4*x'_4 + c_5*x'_5 + c_6*x'_6 = 0.
-    # print(F);
+#     print(F);
+#     Here c_1*x'_1 + c_2*x'_2 + c_3*x'_3 + c_4*x'_4 + c_5*x'_5 + c_6*x'_6 = 0:
+#     print("c_1*x'_1 + c_2*x'_2 + c_3*x'_3 + c_4*x'_4 + c_5*x'_5 + c_6*x'_6 =",
+#          c_1*y_1 + c_2*(x_2-x_4) + c_3*(x_3-x_5) + c_4*x_4 + c_5*x_5 + c_6*(-y_2));
 
-    f = F.coefficient({x_4:0, x_5:0});
-    q_1 = F.coefficient({x_4:1, x_5:0}) / 2;
-    q_2 = F.coefficient({x_4:0, x_5:1}) / 2;
-    l_1 = F.coefficient({x_4:2, x_5:0});
-    l_2 = F.coefficient({x_4:1, x_5:1}) / 2;
-    l_3 = F.coefficient({x_4:0, x_5:2});
-
-    J = R.ideal([f,q_1,q_2,l_1,l_2,l_3]);
-    # P.<x_1, x_2, x_3, x_4, x_5> = ProjectiveSpace(4, k)
-    # return P.subscheme(J);
-    if J.dimension() >= 3:
-        return "V_c contains a possibly relevant geometric plane; abort.";
-    # https://ask.sagemath.org/question/42591/how-to-compute-common-zeros-of-system-of-polynomial-equations-with-dimension-2/
-
-    P.<x_1, x_2, x_3, x_4, x_5> = ProjectiveSpace(4, k);
-    I = R.ideal(F);
-    # print(I)
-    X = P.subscheme(I);
-    I_sing = X.Jacobian().radical();
-    # print(I_sing)
-    I_sing_L = R.ideal(I_sing+[x_1,x_2,x_3]);
-    # print(I_sing_L)
-    Sing_L = P.subscheme(I_sing_L);
-    from sage.schemes.projective.projective_rational_point import enum_projective_finite_field
-    Sing_L_k = enum_projective_finite_field(Sing_L);
-    # https://doc.sagemath.org/html/en/reference/schemes/sage/schemes/projective/projective_rational_point.html
-
-    delta_1 = l_1*l_3 - l_2^2;
-    delta_2 = f*l_3 - q_2^2;
-    delta_3 = f*l_1 - q_1^2;
-
-    det = f*delta_1 - q_1*(q_1*l_3 - l_2*q_2) + q_2*(q_1*l_2 - l_1*q_2);
-
-    S = PolynomialRing(k, 3, 'x_1,x_2,x_3');
-    det = S(det);
-    C = Curve(det);
-    lis = [P for P in C.rational_points()
-           if (delta_1)(P[0],P[1],P[2],0,0) != 0
-           or (delta_2)(P[0],P[1],P[2],0,0) != 0
-           or (delta_3)(P[0],P[1],P[2],0,0) != 0];
-    real_lis = [P for P in lis
-                if k((-delta_1)(P[0],P[1],P[2],0,0)).is_square()
-                and k((-delta_2)(P[0],P[1],P[2],0,0)).is_square()
-                and k((-delta_3)(P[0],P[1],P[2],0,0)).is_square()];
-
-    E_c = -q*q*len(Sing_L_k) + q*(2*len(real_lis) - len(lis));
-    return E_c/q;
+    E_c = StdConicBundleErrorCount(F,q)
+    if (E_c in IntegerRing()):
+        return E_c/q;
+    else:
+        return E_c;
