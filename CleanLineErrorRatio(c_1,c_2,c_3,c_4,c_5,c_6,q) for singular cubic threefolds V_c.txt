@@ -15,18 +15,9 @@ def CleanLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
     # We write each x'_i as a linear combination of x_1,...,x_5,
     # chosen such that F(0,0,0,x_4,x_5) == 0 identically
     # (i.e. so that F vanishes on the rational line x_1=x_2=x_3=0).
-    # print(R((c_2 - c_4)/(c_1 - c_6)))
-    # print(R((c_3 - c_5)/(c_1 - c_6)))
-    # print(R(c_1/c_6))
-    # print(R((c_1*c_4 - c_2*c_6)/(c_1*c_6 - c_6^2)))
-    # print(R((c_2 - c_4)/(c_1 - c_6)))
-    # print(R((c_1*c_5 - c_3*c_6)/(c_1*c_6 - c_6^2)))
-    # print(R((c_3 - c_5)/(c_1 - c_6)))
     y_1 = (x_1 - R((c_2 - c_4)/(c_1 - c_6))*(x_2-x_4) - R((c_3 - c_5)/(c_1 - c_6))*(x_3-x_5))
     y_2 = (R(c_1/c_6)*x_1 + R((c_1*c_4 - c_2*c_6)/(c_1*c_6 - c_6^2))*x_2 + R((c_2 - c_4)/(c_1 - c_6))*x_4 + R((c_1*c_5 - c_3*c_6)/(c_1*c_6 - c_6^2))*x_3 + R((c_3 - c_5)/(c_1 - c_6))*x_5)
     # Note that the formation of y_1,y_2 may yield division-by-zero errors if c_6*(c_1-c_6) is 0 in k.
-    # print(y_1^3)
-    # print(y_2^3)
     F = (y_1^3 + (x_2-x_4)^3 + x_4^3 + (x_3-x_5)^3 + x_5^3 - y_2^3);
     # Here c_1*x'_1 + c_2*x'_2 + c_3*x'_3 + c_4*x'_4 + c_5*x'_5 + c_6*x'_6 = 0.
     # print(F);
@@ -78,4 +69,3 @@ def CleanLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
 
     E_c = -q*q*len(Sing_L_k) + q*(2*len(real_lis) - len(lis));
     return E_c/q;
-    return E_c;
