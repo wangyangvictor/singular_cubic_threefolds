@@ -1,0 +1,687 @@
+range_max = 4;
+q = 5;
+
+k = GF(q,'a')
+R_0 = PolynomialRing(k, 3, 'x_1,x_2,x_3')
+x_1,x_2,x_3 = R_0.gens()
+R = PolynomialRing(R_0, 2, 'x_4,x_5')
+x_4,x_5 = R.gens()
+
+# https://ask.sagemath.org/question/49027/iterate-over-all-homogeneous-polynomials-of-a-certain-degree/
+monos = []
+from itertools import combinations_with_replacement
+for degree in [1,2,3]:
+    monos.append([prod(c) for c in combinations_with_replacement(R_0.gens(), degree)])
+
+from itertools import product
+# The following is too memory intensive:
+# for degree in [1,2,3]:
+#     polys.append([[sum(c*m for (c,m) in zip(coeffs, monos[degree-1])) for coeffs in product(R_0.base_ring(), repeat=len(monos[degree-1]))]])
+
+# Instead, we will randomly sample coefficients:
+while 1:
+    polys = []
+    for degree in [1,2,3]:
+    #     print(monos[degree-1])
+        sample = [];
+        for num_samples in [1,2,3]:
+            coeffs = []
+            for num_coeffs in range(len(monos[degree-1])):
+                coeffs.append(R_0.base_ring().random_element());
+            sample.append(sum(c*m for (c,m) in zip(coeffs, monos[degree-1])));
+        polys.append(sample);
+
+    f = polys[2][0];
+    q_1 = polys[1][0];
+    q_2 = polys[1][1];
+    l_1 = polys[0][0];
+    l_2 = polys[0][1];
+    l_3 = polys[0][2];
+    F = (f + 2*q_1*x_4+2*q_2*x_5 + l_1*x_4^2+2*l_2*x_4*x_5+l_3*x_5^2);
+    print("F =", F)
+    P.<x_1, x_2, x_3, x_4, x_5> = ProjectiveSpace(4, k)
+    I = R.ideal(F)
+    X = P.subscheme(I)
+    I_sing = X.Jacobian().radical()
+    print(I_sing)
+    print(I_sing.dimension())
+#     if D == 0:
+#         print("Discriminant:", D);
+#     if D != 0:
+#         print("Discriminant:", factor(D));
+    print("LazyErrorCount(F,q):", LazyErrorCount(F,q))
+    print("StdConicBundleErrorCount(F,q):", StdConicBundleErrorCount(F,q))
+
+---
+
+Alternatively (see row 25 of excel file "Data for F_q-points on singular cubic threefolds X (in general)"):
+
+R_0 = PolynomialRing(IntegerRing(), 3, 'x_1,x_2,x_3')
+x_1,x_2,x_3 = R_0.gens()
+R = PolynomialRing(R_0, 2, 'x_4,x_5')
+x_4,x_5 = R.gens()
+
+F = -x_1^2*x_2 - 2*x_2^3 - 2*x_1^2*x_3 + x_1*x_2*x_3 - x_2^2*x_3 - x_1*x_3^2 - 2*x_2*x_3^2 + 2*x_2^2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 - 2*x_3^2*x_4 + x_1*x_4^2 + x_3*x_4^2 + x_1^2*x_5 + x_1*x_2*x_5 + 2*x_1*x_3*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 + x_1*x_5^2 - x_2*x_5^2 + x_3*x_5^2
+for q in [5,7,11,13,17]:
+    print(LazyErrorCount(F,q))
+    print(StdConicBundleErrorCount(F,q))
+
+---
+
+Note that to get the type of output below,
+one should uncomment "print("Sing_L_k =", Sing_L_k)"
+in "StdConicBundleErrorCount(-,-)".
+
+---
+
+Results (some distinctive ones featured in excel file "Data for F_q-points on singular cubic threefolds X (in general)", rows 2--24):
+
+F = (-2*x_1 - x_2)*x_4^2 + (x_1 - 2*x_2 - x_3)*x_4*x_5 + (x_1 + 2*x_2)*x_5^2 + (-2*x_1^2 + 2*x_2^2 - 2*x_1*x_3 + 2*x_2*x_3 - x_3^2)*x_4 + (-2*x_1^2 - 2*x_1*x_2 - x_2^2 - x_1*x_3 - x_3^2)*x_5 - 2*x_1^3 - x_1^2*x_2 - x_1*x_2^2 + x_2^3 - x_1^2*x_3 - x_1*x_2*x_3 + x_2^2*x_3 - x_3^3
+LazyErrorCount(F,q): 15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 15
+F = 2*x_1^3 - 2*x_1^2*x_2 - 2*x_1*x_2^2 + x_2^3 - 2*x_1^2*x_3 + x_2^2*x_3 + 2*x_1*x_3^2 + x_2*x_3^2 + 2*x_1*x_2*x_4 - 2*x_2^2*x_4 - 2*x_1*x_3*x_4 - x_2*x_3*x_4 - 2*x_3^2*x_4 + x_1*x_4^2 - x_2*x_4^2 + x_3*x_4^2 + 2*x_1^2*x_5 - x_1*x_2*x_5 - x_1*x_3*x_5 - 2*x_3^2*x_5 - 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 + x_3*x_4*x_5 + x_1*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = x_1^2*x_2 + 2*x_1*x_2^2 - 2*x_2^3 - 2*x_1^2*x_3 + 2*x_1*x_2*x_3 - x_2^2*x_3 + 2*x_1*x_3^2 + x_2*x_3^2 + x_3^3 + x_1^2*x_4 - x_1*x_2*x_4 - x_1*x_3*x_4 + 2*x_2*x_3*x_4 + 2*x_3^2*x_4 + 2*x_2*x_4^2 + x_3*x_4^2 + x_1^2*x_5 - x_1*x_2*x_5 - 2*x_2^2*x_5 + 2*x_2*x_3*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 - x_2*x_4*x_5 - 2*x_3*x_4*x_5 + x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 15
+F = x_1^3 + 2*x_1^2*x_2 + x_1*x_2^2 - x_2^3 - 2*x_1^2*x_3 - 2*x_1*x_2*x_3 + x_2^2*x_3 - 2*x_1*x_3^2 + 2*x_1^2*x_4 + 2*x_1*x_2*x_4 - x_1*x_3*x_4 + 2*x_2*x_3*x_4 - x_3^2*x_4 - 2*x_1*x_4^2 - x_1^2*x_5 + 2*x_2^2*x_5 + x_2*x_3*x_5 - 2*x_3^2*x_5 + x_1*x_4*x_5 - x_2*x_4*x_5 + 2*x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = -2*x_1^3 + 2*x_1^2*x_2 - x_2^3 + 2*x_1^2*x_3 - x_1*x_2*x_3 - x_2^2*x_3 - 2*x_1*x_3^2 + 2*x_3^3 + x_1^2*x_4 + x_1*x_2*x_4 - 2*x_2^2*x_4 + x_1*x_3*x_4 - x_1*x_4^2 + 2*x_2*x_4^2 + 2*x_3*x_4^2 + x_1^2*x_5 - 2*x_1*x_2*x_5 + 2*x_2^2*x_5 + x_1*x_3*x_5 - 2*x_2*x_3*x_5 - 2*x_3^2*x_5 - x_1*x_4*x_5 - 2*x_2*x_4*x_5 + 2*x_3*x_4*x_5 - x_1*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = x_1^3 - 2*x_1^2*x_2 - x_1*x_2^2 - x_2^3 - x_1*x_2*x_3 + x_2^2*x_3 + 2*x_1*x_3^2 + x_2*x_3^2 + 2*x_3^3 - x_1^2*x_4 - 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 - x_1*x_4^2 + 2*x_2*x_4^2 + 2*x_3*x_4^2 + x_1^2*x_5 - x_1*x_3*x_5 - x_2*x_3*x_5 - x_1*x_4*x_5 - x_3*x_4*x_5 - x_1*x_5^2 + 2*x_2*x_5^2
+I_sing = Ideal (x_5, x_3 - x_4, x_2 + x_4, x_1 - 2*x_4) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -15
+F = -x_1^2*x_2 - 2*x_1*x_2^2 - x_2^3 - x_1^2*x_3 - x_1*x_2*x_3 + x_2^2*x_3 - x_1*x_3^2 + 2*x_2*x_3^2 + 2*x_1^2*x_4 + 2*x_1*x_2*x_4 - x_1*x_3*x_4 - x_2*x_3*x_4 + 2*x_3^2*x_4 - 2*x_1*x_4^2 + x_3*x_4^2 - 2*x_1*x_2*x_5 - 2*x_2^2*x_5 - x_1*x_3*x_5 + 2*x_2*x_3*x_5 - x_1*x_4*x_5 - 2*x_2*x_4*x_5 + x_3*x_4*x_5 - x_1*x_5^2 + x_2*x_5^2 + x_3*x_5^2
+I_sing = Ideal (x_4, x_3 + x_5, x_2 - 2*x_5, x_1 - 2*x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = 2*x_1^3 - 2*x_2^3 - 2*x_1^2*x_3 + x_1*x_2*x_3 + x_1*x_3^2 + 2*x_1^2*x_4 - x_1*x_2*x_4 - 2*x_2^2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 - x_3^2*x_4 + x_1*x_4^2 + x_2*x_4^2 - 2*x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_1*x_2*x_5 + 2*x_2^2*x_5 - x_2*x_3*x_5 + x_3^2*x_5 - x_2*x_4*x_5 - x_3*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = 2*x_1^3 + 2*x_1^2*x_2 - 2*x_1*x_2^2 + 2*x_2^2*x_3 - 2*x_1*x_3^2 + x_2*x_3^2 - 2*x_3^3 + 2*x_1^2*x_4 - x_1*x_2*x_4 + x_2^2*x_4 - 2*x_1*x_3*x_4 - 2*x_3^2*x_4 + x_1*x_4^2 + x_2*x_4^2 - 2*x_3*x_4^2 + x_1^2*x_5 + x_1*x_2*x_5 - x_1*x_3*x_5 + 2*x_2*x_3*x_5 - 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = x_1^3 + x_1^2*x_2 + x_1*x_2^2 - x_2^3 + 2*x_1^2*x_3 - x_1*x_2*x_3 + 2*x_2^2*x_3 - 2*x_1*x_3^2 - x_3^3 + x_1^2*x_4 - 2*x_2^2*x_4 + 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_1*x_4^2 - 2*x_3*x_4^2 - x_1^2*x_5 - 2*x_1*x_2*x_5 + 2*x_2^2*x_5 - 2*x_1*x_3*x_5 - 2*x_3^2*x_5 + 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + 2*x_3*x_4*x_5 - x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = -x_1^3 + 2*x_1^2*x_2 + 2*x_1*x_2^2 + 2*x_2^3 + 2*x_1^2*x_3 - x_1*x_3^2 + 2*x_3^3 + x_1^2*x_4 + x_2^2*x_4 - x_2*x_3*x_4 - x_3^2*x_4 - 2*x_2*x_4^2 + 2*x_1^2*x_5 - x_1*x_2*x_5 + 2*x_2^2*x_5 - x_1*x_3*x_5 + 2*x_2*x_3*x_5 - x_3^2*x_5 - 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 + x_3*x_4*x_5 - x_1*x_5^2 - x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = 2*x_2^3 - 2*x_1^2*x_3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 + x_1*x_3^2 - x_2*x_3^2 - 2*x_1^2*x_4 - x_1*x_2*x_4 - x_2^2*x_4 - x_1*x_3*x_4 + x_2*x_3*x_4 - 2*x_3^2*x_4 - 2*x_1*x_4^2 - x_2*x_4^2 - 2*x_1^2*x_5 - 2*x_2^2*x_5 - x_1*x_3*x_5 - 2*x_2*x_3*x_5 + x_3^2*x_5 - x_3*x_4*x_5 + 2*x_1*x_5^2 - 2*x_3*x_5^2
+I_sing = Ideal (x_4 - 2*x_5, x_3 + x_5, x_2, x_1 - x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = -2*x_1*x_2^2 - 2*x_1^2*x_3 + 2*x_1*x_2*x_3 - x_2*x_3^2 - x_3^3 + x_1*x_2*x_4 - 2*x_2^2*x_4 - x_1*x_3*x_4 + 2*x_2*x_3*x_4 - x_3^2*x_4 + x_1*x_4^2 - 2*x_3*x_4^2 - 2*x_1^2*x_5 - x_1*x_2*x_5 - 2*x_2^2*x_5 - x_1*x_3*x_5 - 2*x_2*x_3*x_5 - 2*x_3^2*x_5 + x_1*x_4*x_5 + x_3*x_4*x_5 + 2*x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = 2*x_1^3 + x_1^2*x_2 + x_1*x_2^2 + x_1^2*x_3 + 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_3^3 + x_1^2*x_4 + 2*x_1*x_2*x_4 + x_2^2*x_4 + 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 - 2*x_3^2*x_4 + 2*x_1*x_4^2 - x_2*x_4^2 - x_1^2*x_5 - 2*x_2^2*x_5 - 2*x_2*x_3*x_5 - 2*x_3^2*x_5 - x_1*x_4*x_5 - 2*x_2*x_4*x_5 - x_3*x_4*x_5 - x_1*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = 2*x_1^3 - 2*x_1*x_2^2 + 2*x_2^3 - x_1^2*x_3 - x_1*x_2*x_3 - x_2^2*x_3 - 2*x_1*x_3^2 - 2*x_2*x_3^2 - 2*x_3^3 + x_1^2*x_4 - x_1*x_2*x_4 - x_2^2*x_4 - 2*x_1*x_3*x_4 - x_2*x_3*x_4 + x_3^2*x_4 - x_1*x_4^2 - x_3*x_4^2 - x_1^2*x_5 + 2*x_2^2*x_5 - x_1*x_3*x_5 + x_2*x_3*x_5 + 2*x_3^2*x_5 + 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + 2*x_1*x_5^2 - 2*x_2*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = -x_1^3 + x_1^2*x_2 + 2*x_2^3 - x_1^2*x_3 - 2*x_1*x_2*x_3 - x_2^2*x_3 + 2*x_1*x_3^2 + x_2*x_3^2 + 2*x_3^3 - 2*x_1^2*x_4 + x_1*x_2*x_4 - x_2^2*x_4 - 2*x_1*x_3*x_4 + x_2*x_3*x_4 - x_1*x_4^2 - 2*x_2*x_4^2 + 2*x_3*x_4^2 - 2*x_1^2*x_5 + x_1*x_2*x_5 + 2*x_2^2*x_5 + x_1*x_3*x_5 - 2*x_2*x_3*x_5 - 2*x_3^2*x_5 - 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + 2*x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = 2*x_1^3 - 2*x_1^2*x_2 + 2*x_2^3 + x_1^2*x_3 - 2*x_2^2*x_3 + x_2*x_3^2 - 2*x_3^3 + 2*x_1^2*x_4 + x_1*x_2*x_4 + x_2^2*x_4 - 2*x_3^2*x_4 + x_1*x_4^2 - 2*x_3*x_4^2 + x_1^2*x_5 + x_1*x_2*x_5 - 2*x_2^2*x_5 + x_2*x_3*x_5 - 2*x_3^2*x_5 + x_1*x_4*x_5 + 2*x_2*x_4*x_5 - x_3*x_4*x_5 + 2*x_2*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = x_1^3 - 2*x_1^2*x_2 + x_2^3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 + 2*x_1*x_3^2 - 2*x_2*x_3^2 + 2*x_3^3 - x_1^2*x_4 + x_2^2*x_4 + 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 - x_1*x_4^2 - 2*x_2*x_4^2 + x_3*x_4^2 - 2*x_1^2*x_5 - 2*x_1*x_2*x_5 - x_2^2*x_5 - 2*x_1*x_3*x_5 + 2*x_2*x_3*x_5 - 2*x_3^2*x_5 - x_1*x_4*x_5 - 2*x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = 2*x_1^2*x_2 + 2*x_1^2*x_3 - x_1*x_2*x_3 - 2*x_2^2*x_3 + 2*x_1*x_3^2 + x_2*x_3^2 + x_1^2*x_4 - 2*x_1*x_2*x_4 + 2*x_2*x_3*x_4 + x_3^2*x_4 - x_2*x_4^2 + 2*x_1*x_2*x_5 - x_1*x_3*x_5 + x_2*x_3*x_5 - x_3^2*x_5 - x_1*x_4*x_5 - x_2*x_4*x_5 + x_3*x_4*x_5 - 2*x_1*x_5^2 - x_2*x_5^2 - x_3*x_5^2
+I_sing = Ideal (x_4 - x_5, x_3 + x_5, x_2, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = x_1^3 - x_1*x_2^2 - 2*x_2^3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - x_1*x_3^2 - 2*x_2*x_3^2 + 2*x_1^2*x_4 - 2*x_1*x_2*x_4 + 2*x_2^2*x_4 - 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_1*x_4^2 + 2*x_2*x_4^2 - x_1*x_2*x_5 + x_2^2*x_5 - 2*x_2*x_3*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_2*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = x_1^3 - 2*x_1^2*x_2 - x_2^3 + 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_2*x_3^2 + 2*x_3^3 - 2*x_1^2*x_4 - x_1*x_2*x_4 - 2*x_2^2*x_4 + x_1*x_3*x_4 + 2*x_2*x_3*x_4 - 2*x_1*x_4^2 - 2*x_2*x_4^2 - 2*x_3*x_4^2 - x_1^2*x_5 - 2*x_1*x_2*x_5 + 2*x_2^2*x_5 + x_1*x_3*x_5 - 2*x_3^2*x_5 - 2*x_2*x_4*x_5 + x_3*x_4*x_5 - 2*x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = x_1^3 - x_1^2*x_2 + x_1*x_2^2 + 2*x_2^3 + x_1^2*x_3 + x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 - x_2*x_3^2 - x_3^3 - 2*x_1^2*x_4 - 2*x_1*x_2*x_4 - 2*x_2^2*x_4 + 2*x_2*x_3*x_4 - 2*x_3^2*x_4 - x_1*x_4^2 - 2*x_2*x_4^2 - 2*x_3*x_4^2 + x_1^2*x_5 - 2*x_1*x_3*x_5 - 2*x_3^2*x_5 + x_1*x_4*x_5 + 2*x_2*x_4*x_5 + x_3*x_4*x_5 - x_1*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 15
+F = x_1^3 + x_1^2*x_2 - 2*x_1*x_2^2 + 2*x_2^3 + x_1^2*x_3 + 2*x_1*x_2*x_3 - x_2^2*x_3 + 2*x_1*x_3^2 - x_3^3 - 2*x_2^2*x_4 + x_3^2*x_4 - 2*x_1*x_4^2 + x_2*x_4^2 + x_3*x_4^2 - x_1^2*x_5 + 2*x_1*x_2*x_5 + 2*x_1*x_3*x_5 + 2*x_2*x_3*x_5 + x_3^2*x_5 - 2*x_3*x_4*x_5 + 2*x_1*x_5^2 - x_2*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = x_1^3 - 2*x_1^2*x_2 + 2*x_2^3 - x_1*x_2*x_3 + 2*x_2^2*x_3 - 2*x_1*x_3^2 - 2*x_3^3 + 2*x_1^2*x_4 + x_1*x_2*x_4 - 2*x_2^2*x_4 + x_1*x_3*x_4 + x_2*x_3*x_4 + x_3^2*x_4 + 2*x_1*x_4^2 - x_2*x_4^2 - x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_1*x_2*x_5 - 2*x_2^2*x_5 + 2*x_1*x_3*x_5 - 2*x_2*x_3*x_5 - x_3^2*x_5 + x_1*x_4*x_5 + x_2*x_4*x_5 + x_3*x_4*x_5 - 2*x_1*x_5^2 - x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = -2*x_1^2*x_2 - x_1*x_2^2 - x_1^2*x_3 + 2*x_1*x_2*x_3 - x_2^2*x_3 - 2*x_1*x_3^2 + x_2*x_3^2 + x_3^3 + x_1^2*x_4 + 2*x_2^2*x_4 + x_1*x_3*x_4 + x_2*x_3*x_4 - x_3^2*x_4 + 2*x_1*x_4^2 + x_2*x_4^2 + x_3*x_4^2 + x_1^2*x_5 + 2*x_1*x_2*x_5 + 2*x_2^2*x_5 - 2*x_1*x_4*x_5 + 2*x_3*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 15
+F = x_1^3 + 2*x_1^2*x_2 - x_2^3 - x_1^2*x_3 - 2*x_1*x_2*x_3 - x_1*x_3^2 + 2*x_2*x_3^2 + x_3^3 + x_1^2*x_4 + 2*x_1*x_2*x_4 - 2*x_2^2*x_4 + x_1*x_3*x_4 - x_2*x_3*x_4 - 2*x_3^2*x_4 - 2*x_2*x_4^2 - 2*x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_1*x_2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 + 2*x_3^2*x_5 - 2*x_2*x_4*x_5 - x_1*x_5^2 + x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = -2*x_1^2*x_2 + x_1*x_2^2 + x_2^3 - 2*x_1^2*x_3 + 2*x_1*x_2*x_3 + x_2*x_3^2 + 2*x_1^2*x_4 - 2*x_1*x_3*x_4 + 2*x_3^2*x_4 - x_1*x_4^2 - x_1*x_2*x_5 + x_1*x_4*x_5 + 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = 2*x_1^3 - 2*x_1^2*x_2 - 2*x_1*x_2^2 + 2*x_2^3 - 2*x_1^2*x_3 - 2*x_1*x_2*x_3 + 2*x_2^2*x_3 + x_1*x_3^2 + x_3^3 - x_1^2*x_4 - x_1*x_2*x_4 + x_2^2*x_4 - 2*x_1*x_3*x_4 - x_2*x_3*x_4 + x_1*x_4^2 + x_2*x_4^2 - x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_2^2*x_5 + x_1*x_3*x_5 - 2*x_2*x_3*x_5 + 2*x_3^2*x_5 - x_1*x_4*x_5 - x_2*x_4*x_5 + x_3*x_4*x_5 + x_1*x_5^2 - x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 15
+F = -2*x_1^3 + 2*x_2^3 + 2*x_1^2*x_3 - x_1*x_2*x_3 + 2*x_1*x_3^2 - x_2*x_3^2 + x_1^2*x_4 - x_1*x_3*x_4 + 2*x_3^2*x_4 + 2*x_1*x_4^2 - 2*x_3*x_4^2 + x_1^2*x_5 - x_1*x_2*x_5 + x_2^2*x_5 + 2*x_1*x_3*x_5 - x_2*x_3*x_5 - x_3^2*x_5 - 2*x_3*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 15
+F = x_1^3 - 2*x_1^2*x_2 - x_2^3 - 2*x_1^2*x_3 - x_1*x_2*x_3 - x_2^2*x_3 - 2*x_1*x_3^2 + 2*x_3^3 + 2*x_2^2*x_4 - 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 - 2*x_3^2*x_4 + 2*x_1*x_4^2 - 2*x_2*x_4^2 - x_3*x_4^2 - 2*x_1^2*x_5 + x_2^2*x_5 + x_2*x_3*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5 - x_2*x_4*x_5 - x_3*x_4*x_5 - 2*x_1*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = x_1^2*x_2 - 2*x_2^3 + x_1^2*x_3 + 2*x_1*x_3^2 + x_2*x_3^2 - x_3^3 - 2*x_1*x_2*x_4 - 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 - 2*x_1*x_4^2 + x_3*x_4^2 - 2*x_1^2*x_5 - x_1*x_2*x_5 + x_2^2*x_5 + x_1*x_3*x_5 - x_2*x_3*x_5 - 2*x_3^2*x_5 - 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + x_1*x_5^2 - x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = 2*x_1^3 + x_1*x_2^2 + x_2^3 - 2*x_1^2*x_3 - 2*x_1*x_2*x_3 + x_2^2*x_3 - x_1*x_3^2 - x_2*x_3^2 + 2*x_3^3 - 2*x_1*x_2*x_4 - x_2^2*x_4 + 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 + 2*x_3^2*x_4 - x_1*x_4^2 + 2*x_3*x_4^2 + 2*x_1*x_2*x_5 + 2*x_2^2*x_5 - x_1*x_3*x_5 - 2*x_2*x_3*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5
+I_sing = Ideal (x_4, x_3, x_2, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 10
+Sing_L_k = [(0 : 0 : 0 : 0 : 1)]
+StdConicBundleErrorCount(F,q): 10
+F = -x_1^2*x_2 - 2*x_1*x_2^2 - 2*x_1^2*x_3 + x_1*x_2*x_3 - x_2^2*x_3 + x_1*x_3^2 - 2*x_2*x_3^2 - x_3^3 - x_1^2*x_4 - 2*x_1*x_2*x_4 + x_2^2*x_4 + 2*x_1*x_3*x_4 + x_3^2*x_4 + 2*x_1*x_4^2 + 2*x_1^2*x_5 - 2*x_1*x_2*x_5 + 2*x_2^2*x_5 - 2*x_1*x_3*x_5 + 2*x_2*x_3*x_5 + x_1*x_4*x_5 + 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 + x_1*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = -x_1^2*x_3 - x_2^2*x_3 + x_1*x_3^2 + x_2*x_3^2 + 2*x_3^3 + x_1^2*x_4 - x_1*x_2*x_4 + 2*x_2^2*x_4 + x_1*x_3*x_4 + x_2*x_3*x_4 + x_1*x_4^2 + x_2*x_4^2 - 2*x_3*x_4^2 - 2*x_1*x_2*x_5 + x_2^2*x_5 - 2*x_2*x_3*x_5 + 2*x_3^2*x_5 + 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 - 2*x_1*x_5^2 - 2*x_2*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = x_1^3 - x_1^2*x_2 - x_2^3 + 2*x_1^2*x_3 + 2*x_2^2*x_3 + 2*x_1*x_3^2 - 2*x_2*x_3^2 - x_3^3 + 2*x_1^2*x_4 + x_1*x_2*x_4 + 2*x_2^2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 + 2*x_1*x_4^2 - 2*x_2*x_4^2 - x_3*x_4^2 + x_1^2*x_5 + 2*x_1*x_2*x_5 - 2*x_2^2*x_5 - 2*x_1*x_3*x_5 - 2*x_2*x_3*x_5 - x_3^2*x_5 - 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 + 2*x_3*x_4*x_5 - 2*x_1*x_5^2 - 2*x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = x_1^3 - 2*x_1^2*x_2 - 2*x_1*x_2^2 - x_2^3 - x_1^2*x_3 - x_1*x_2*x_3 + 2*x_2^2*x_3 + 2*x_1*x_3^2 + 2*x_2*x_3^2 + 2*x_3^3 - x_2^2*x_4 + x_1*x_3*x_4 - x_2*x_3*x_4 + 2*x_1*x_4^2 + x_2*x_4^2 + 2*x_1*x_2*x_5 - 2*x_2^2*x_5 - 2*x_1*x_3*x_5 - x_2*x_3*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + x_3*x_4*x_5 - 2*x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = 2*x_1^3 + 2*x_1^2*x_2 - x_1*x_2^2 + 2*x_2^3 + x_1^2*x_3 - 2*x_2^2*x_3 - x_1*x_3^2 - 2*x_2*x_3^2 - x_3^3 - x_1^2*x_4 - x_1*x_2*x_4 - 2*x_2^2*x_4 - 2*x_1*x_3*x_4 + 2*x_3^2*x_4 + x_2*x_4^2 + x_3*x_4^2 - x_1*x_2*x_5 + 2*x_2^2*x_5 + x_1*x_3*x_5 - x_2*x_3*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5 - x_2*x_4*x_5 - x_3*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = 2*x_1^3 - x_1^2*x_2 - x_1*x_2^2 + x_2^3 + 2*x_1^2*x_3 - 2*x_1*x_2*x_3 + x_2^2*x_3 - x_1*x_3^2 + 2*x_2*x_3^2 + 2*x_1^2*x_4 + 2*x_1*x_2*x_4 - 2*x_2^2*x_4 + 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 - 2*x_3^2*x_4 - 2*x_1*x_4^2 + 2*x_2*x_4^2 + x_3*x_4^2 - x_1^2*x_5 + x_1*x_2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 - x_3^2*x_5 + 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 + x_3*x_4*x_5 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 20
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 20
+F = x_1^3 - x_1^2*x_2 + 2*x_1*x_2^2 + 2*x_2^3 + 2*x_1^2*x_3 - x_1*x_2*x_3 + x_2^2*x_3 - 2*x_1*x_3^2 - x_2*x_3^2 - x_3^3 + 2*x_1*x_2*x_4 + 2*x_2^2*x_4 - 2*x_2*x_3*x_4 - x_3^2*x_4 + x_2*x_4^2 - 2*x_3*x_4^2 + 2*x_2^2*x_5 + x_1*x_3*x_5 - 2*x_2*x_3*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 - 2*x_1*x_5^2 + x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = 2*x_1^3 - 2*x_1^2*x_2 + x_1*x_2^2 - x_2^3 - x_1^2*x_3 + 2*x_2^2*x_3 + 2*x_3^3 + 2*x_1^2*x_4 - x_1*x_2*x_4 + x_2^2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 - 2*x_1*x_4^2 + 2*x_2*x_4^2 + x_3*x_4^2 - 2*x_1*x_2*x_5 - 2*x_2^2*x_5 + 2*x_1*x_3*x_5 + 2*x_3^2*x_5 + 2*x_1*x_4*x_5 + 2*x_3*x_4*x_5 - 2*x_1*x_5^2 - 2*x_2*x_5^2 + 2*x_3*x_5^2
+I_sing = Ideal (x_3 + 2*x_4 - 2*x_5, x_2 + 2*x_4, x_1 + 2*x_4 - x_5, x_4^2 - 2*x_5^2) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 15
+F = -x_1^3 + x_1^2*x_2 + 2*x_2^3 - x_1^2*x_3 - x_1*x_2*x_3 + 2*x_2^2*x_3 + x_1*x_3^2 - 2*x_2*x_3^2 + 2*x_3^3 - 2*x_1^2*x_4 - x_1*x_2*x_4 + x_2^2*x_4 + 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_3^2*x_4 - 2*x_1*x_4^2 + 2*x_2*x_4^2 + 2*x_3*x_4^2 + 2*x_1^2*x_5 - 2*x_1*x_2*x_5 - 2*x_2^2*x_5 - x_1*x_3*x_5 - x_2*x_3*x_5 + x_1*x_4*x_5 + 2*x_2*x_4*x_5 - x_2*x_5^2 - 2*x_3*x_5^2
+I_sing = Ideal (x_3 - x_4 - x_5, x_2 + 2*x_4 - 2*x_5, x_1 + 2*x_5, x_4*x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 20
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 20
+F = 2*x_1^3 + x_1^2*x_2 - 2*x_2^3 + 2*x_1^2*x_3 - 2*x_2^2*x_3 + x_1*x_3^2 + 2*x_2*x_3^2 - 2*x_3^3 - x_1^2*x_4 - 2*x_1*x_2*x_4 + 2*x_2^2*x_4 - 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 - x_1*x_4^2 + x_2*x_4^2 - 2*x_1^2*x_5 + x_1*x_2*x_5 - x_1*x_3*x_5 - x_2*x_3*x_5 + x_3^2*x_5 + x_1*x_4*x_5 + 2*x_2*x_4*x_5 + x_1*x_5^2 - x_2*x_5^2
+LazyErrorCount(F,q): 25
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 25
+F = 2*x_1^3 - x_1^2*x_2 - x_1^2*x_3 + 2*x_2^2*x_3 - 2*x_1*x_3^2 - 2*x_2*x_3^2 + 2*x_1*x_2*x_4 + 2*x_2^2*x_4 - 2*x_2*x_3*x_4 + x_1*x_4^2 + 2*x_2*x_4^2 + x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_1*x_2*x_5 + x_2^2*x_5 - x_1*x_3*x_5 - 2*x_2*x_3*x_5 - 2*x_3^2*x_5 + x_1*x_5^2 - 2*x_2*x_5^2 + 2*x_3*x_5^2
+I_sing = Ideal (x_4 - x_5, x_3 + 2*x_5, x_2 + x_5, x_1 - x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = 2*x_1^3 + 2*x_1*x_2^2 - 2*x_2^3 - 2*x_1^2*x_3 - x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 + 2*x_2*x_3^2 + x_3^3 + x_1^2*x_4 + 2*x_1*x_2*x_4 + 2*x_2*x_3*x_4 - 2*x_3^2*x_4 + 2*x_1*x_4^2 + 2*x_3*x_4^2 - x_1*x_2*x_5 + 2*x_2^2*x_5 + 2*x_1*x_3*x_5 + 2*x_2*x_3*x_5 + 2*x_3^2*x_5 + 2*x_1*x_4*x_5 - 2*x_3*x_4*x_5 - x_1*x_5^2 + 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 20
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 20
+F = 2*x_1^3 - 2*x_1^2*x_2 + 2*x_1*x_2^2 - 2*x_1*x_2*x_3 + 2*x_2^2*x_3 - 2*x_1*x_3^2 + x_1^2*x_4 - 2*x_1*x_2*x_4 + 2*x_2^2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 - 2*x_3^2*x_4 - 2*x_1*x_4^2 - x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_2^2*x_5 + 2*x_1*x_3*x_5 + x_3^2*x_5 - x_2*x_4*x_5 + 2*x_1*x_5^2 - x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 25
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 25
+F = x_1^2*x_2 - x_1*x_2^2 + 2*x_2^3 + x_1^2*x_3 + 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 + x_2*x_3^2 + 2*x_1^2*x_4 + 2*x_1*x_2*x_4 + 2*x_2^2*x_4 + 2*x_1*x_3*x_4 + x_2*x_3*x_4 + 2*x_3^2*x_4 - 2*x_1*x_4^2 - x_2*x_4^2 - 2*x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_1*x_2*x_5 + x_2^2*x_5 + 2*x_2*x_3*x_5 - x_3^2*x_5 - 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 30
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 30
+F = 2*x_1^2*x_2 - 2*x_1*x_2^2 + 2*x_2^3 - 2*x_1^2*x_3 + 2*x_1*x_2*x_3 + 2*x_2^2*x_3 - 2*x_2*x_3^2 - 2*x_3^3 + x_1^2*x_4 + x_1*x_2*x_4 - x_1*x_3*x_4 + x_2*x_3*x_4 + x_1*x_4^2 + x_2*x_4^2 - x_3*x_4^2 + 2*x_1^2*x_5 + 2*x_1*x_2*x_5 + 2*x_1*x_3*x_5 + 2*x_2*x_3*x_5 - 2*x_3^2*x_5 - 2*x_2*x_4*x_5 + x_1*x_5^2 - 2*x_2*x_5^2 + 2*x_3*x_5^2
+I_sing = Ideal (x_5, x_4, x_2 - x_3, x_1 + 2*x_3) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = 2*x_1^3 - x_1^2*x_2 + 2*x_2^3 - x_1*x_2*x_3 - 2*x_1*x_3^2 + x_2*x_3^2 + 2*x_1^2*x_4 - 2*x_1*x_3*x_4 - x_2*x_3*x_4 - 2*x_3^2*x_4 - x_1*x_4^2 - x_1*x_2*x_5 - 2*x_2^2*x_5 - x_1*x_3*x_5 + x_3^2*x_5 - x_1*x_4*x_5 + 2*x_3*x_4*x_5 - x_1*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = x_1^3 + 2*x_1^2*x_2 - x_1*x_2^2 - 2*x_2^3 - x_1^2*x_3 + x_2^2*x_3 + x_1*x_3^2 + x_2*x_3^2 - x_3^3 - 2*x_1*x_2*x_4 + x_2^2*x_4 - x_2*x_3*x_4 - 2*x_1*x_4^2 + 2*x_2*x_4^2 - 2*x_1*x_2*x_5 + x_2^2*x_5 - x_1*x_3*x_5 + 2*x_2*x_3*x_5 - x_3^2*x_5 + 2*x_1*x_4*x_5 + x_2*x_4*x_5 - x_3*x_4*x_5 + 2*x_1*x_5^2 + 2*x_2*x_5^2 - 2*x_3*x_5^2
+I_sing = Ideal (x_4 + 2*x_5, x_3 - x_5, x_2 + 2*x_5, x_1 + x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = -2*x_1^3 + x_1^2*x_2 + 2*x_1*x_2^2 - 2*x_2^3 - x_1^2*x_3 + x_2^2*x_3 - x_1*x_3^2 + 2*x_2*x_3^2 + x_3^3 - x_1^2*x_4 - x_1*x_2*x_4 - 2*x_1*x_3*x_4 - x_2*x_3*x_4 - 2*x_3^2*x_4 + 2*x_1*x_4^2 - x_2*x_4^2 + x_3*x_4^2 - 2*x_1^2*x_5 - x_1*x_2*x_5 - 2*x_2^2*x_5 + x_1*x_3*x_5 - 2*x_2*x_3*x_5 + x_1*x_4*x_5 + x_2*x_4*x_5 + x_3*x_4*x_5 + x_1*x_5^2 - 2*x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = -x_1^3 - 2*x_1^2*x_2 + 2*x_1*x_2^2 - x_2^3 + 2*x_1^2*x_3 + 2*x_1*x_2*x_3 + x_2^2*x_3 + x_1*x_3^2 - x_3^3 - x_1^2*x_4 + x_1*x_2*x_4 - 2*x_1*x_3*x_4 + x_3^2*x_4 - x_1*x_4^2 + 2*x_3*x_4^2 + x_1^2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 + x_1*x_4*x_5 + x_2*x_4*x_5 - x_3*x_4*x_5 - x_1*x_5^2 - 2*x_2*x_5^2 + 2*x_3*x_5^2
+I_sing = Ideal (x_5, x_3, x_2 - x_4, x_1 + x_4) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = 2*x_1^3 - x_1^2*x_2 + 2*x_1*x_2^2 + x_2^3 - x_1*x_2*x_3 - 2*x_2^2*x_3 - x_1*x_3^2 + 2*x_2*x_3^2 - 2*x_3^3 + x_1*x_2*x_4 - 2*x_2^2*x_4 - 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 - x_3^2*x_4 - x_1*x_4^2 - x_2*x_4^2 + x_3*x_4^2 - x_1^2*x_5 - x_1*x_2*x_5 - 2*x_2^2*x_5 + x_1*x_3*x_5 - 2*x_2*x_3*x_5 + 2*x_3^2*x_5 + 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 - x_3*x_4*x_5 - x_2*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = x_1^2*x_2 - x_1*x_2^2 - x_2^3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 + x_1^2*x_4 - x_1*x_2*x_4 - 2*x_1*x_3*x_4 - x_2*x_3*x_4 - 2*x_1*x_4^2 - 2*x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_2^2*x_5 - 2*x_1*x_3*x_5 - x_2*x_3*x_5 + 2*x_3^2*x_5 + x_1*x_4*x_5 - 2*x_2*x_4*x_5 - x_3*x_4*x_5 + 2*x_1*x_5^2 - x_2*x_5^2 - 2*x_3*x_5^2
+I_sing = Ideal (x_5, x_4, x_2, x_1 - 2*x_3) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 15
+F = -2*x_1^3 + 2*x_1^2*x_2 + 2*x_1*x_2^2 - 2*x_2^3 + x_1^2*x_3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 + x_2*x_3^2 - x_3^3 - x_1^2*x_4 + x_1*x_2*x_4 - 2*x_2^2*x_4 + 2*x_1*x_3*x_4 - x_2*x_3*x_4 + x_3^2*x_4 - x_1*x_4^2 - x_2*x_4^2 + x_3*x_4^2 + 2*x_1^2*x_5 - 2*x_1*x_2*x_5 + x_2^2*x_5 - x_1*x_3*x_5 - 2*x_2*x_3*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 - x_3*x_4*x_5 - 2*x_1*x_5^2 + 2*x_2*x_5^2 + 2*x_3*x_5^2
+I_sing = Ideal (x_5, x_4, x_2 + 2*x_3, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = -2*x_1^3 - x_1^2*x_2 - 2*x_2^3 + 2*x_1^2*x_3 + 2*x_1*x_2*x_3 - 2*x_2^2*x_3 + x_1*x_3^2 - x_2*x_3^2 + 2*x_3^3 - x_1^2*x_4 + 2*x_2^2*x_4 + x_1*x_3*x_4 - x_2*x_3*x_4 + 2*x_3^2*x_4 - 2*x_3*x_4^2 - 2*x_1^2*x_5 + x_1*x_2*x_5 - 2*x_2^2*x_5 - x_1*x_3*x_5 + 2*x_1*x_4*x_5 - 2*x_3*x_4*x_5 + 2*x_1*x_5^2 - x_2*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = 2*x_1^2*x_2 + x_1*x_2^2 - x_1^2*x_3 - x_1*x_2*x_3 - x_2^2*x_3 - x_1*x_3^2 - 2*x_2*x_3^2 + x_1*x_3*x_4 + 2*x_2*x_3*x_4 + x_3^2*x_4 - x_1*x_4^2 - x_2*x_4^2 - 2*x_3*x_4^2 + x_1^2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 - x_2*x_3*x_5 + 2*x_3^2*x_5 + x_1*x_4*x_5 + 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_1*x_5^2 + 2*x_2*x_5^2
+I_sing = Ideal (x_4 - 2*x_5, x_3 - x_5, x_2 - x_5, x_1 + 2*x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = 2*x_1^2*x_2 + 2*x_1*x_2^2 - x_2^3 + 2*x_1^2*x_3 + x_1*x_2*x_3 + 2*x_2^2*x_3 - 2*x_1*x_3^2 - 2*x_3^3 - x_1^2*x_4 - 2*x_1*x_2*x_4 - x_2^2*x_4 - 2*x_1*x_3*x_4 - x_2*x_3*x_4 + x_1*x_4^2 - x_2*x_4^2 - 2*x_3*x_4^2 + x_1^2*x_5 - x_1*x_2*x_5 + x_2^2*x_5 + x_1*x_3*x_5 + x_2*x_3*x_5 - 2*x_3^2*x_5 - 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 + x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+I_sing = Ideal (x_5, x_3 + 2*x_4, x_2 - 2*x_4, x_1 - x_4) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = -x_1^3 - 2*x_1^2*x_2 - x_1*x_2^2 - x_2^3 - x_1*x_2*x_3 + 2*x_2^2*x_3 + 2*x_1*x_3^2 - x_3^3 + 2*x_1^2*x_4 - x_1*x_2*x_4 + 2*x_2^2*x_4 + 2*x_1*x_3*x_4 + x_2*x_3*x_4 - x_3^2*x_4 - 2*x_1*x_4^2 + 2*x_2*x_4^2 - 2*x_3*x_4^2 - 2*x_1^2*x_5 - x_1*x_2*x_5 + 2*x_2^2*x_5 + x_1*x_3*x_5 - x_2*x_3*x_5 + 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2 - x_3*x_5^2
+I_sing = Ideal (x_5, x_4, x_2 + 2*x_3, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = x_1^3 + 2*x_1^2*x_2 + 2*x_2^3 + x_1*x_2*x_3 - x_2^2*x_3 + x_1*x_3^2 + 2*x_2*x_3^2 + 2*x_3^3 + 2*x_1*x_2*x_4 + 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 + x_1*x_4^2 - x_2*x_4^2 + x_3*x_4^2 + 2*x_1^2*x_5 - 2*x_1*x_2*x_5 + 2*x_2^2*x_5 - 2*x_2*x_3*x_5 + 2*x_3^2*x_5 + x_1*x_4*x_5 - 2*x_2*x_4*x_5 + x_3*x_4*x_5 - x_1*x_5^2 + 2*x_2*x_5^2
+I_sing = Ideal (x_4 + x_5, x_3 - x_5, x_2, x_1 - x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = 2*x_1^2*x_2 - 2*x_1*x_2^2 + 2*x_2^3 + x_1^2*x_3 + x_2^2*x_3 + 2*x_2^2*x_4 + x_1*x_3*x_4 + x_2*x_3*x_4 + x_3^2*x_4 - x_2*x_4^2 - x_3*x_4^2 - x_1^2*x_5 + x_1*x_2*x_5 - 2*x_2^2*x_5 + x_2*x_3*x_5 - 2*x_3^2*x_5 + x_1*x_4*x_5 - 2*x_2*x_4*x_5 + 2*x_3*x_5^2
+I_sing = Ideal (x_2 + x_3 - 2*x_5, x_1 - 2*x_3 + x_4 - x_5, x_4^2 - 2*x_3*x_5 - x_4*x_5 + x_5^2, x_3*x_4 + 2*x_3*x_5, x_3^2 - x_3*x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = -2*x_1^3 + 2*x_1^2*x_2 + 2*x_1*x_2^2 - 2*x_2^3 - x_1^2*x_3 - x_1*x_2*x_3 - 2*x_2^2*x_3 + 2*x_1*x_3^2 - x_2*x_3^2 - x_1*x_2*x_4 + x_2^2*x_4 + 2*x_1*x_3*x_4 - x_2*x_3*x_4 + x_1*x_4^2 + x_2*x_4^2 - 2*x_3*x_4^2 - x_1*x_2*x_5 + 2*x_2^2*x_5 + x_1*x_3*x_5 - 2*x_3^2*x_5 - 2*x_1*x_4*x_5 - x_2*x_4*x_5 - x_1*x_5^2 + x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = 2*x_1^2*x_2 - 2*x_1*x_2^2 - x_2^3 - x_1^2*x_3 + x_1*x_2*x_3 - 2*x_2^2*x_3 + 2*x_2*x_3^2 + x_3^3 - x_1^2*x_4 + 2*x_1*x_2*x_4 + 2*x_2^2*x_4 + x_1*x_3*x_4 + 2*x_3^2*x_4 + 2*x_1*x_4^2 - x_2*x_4^2 - 2*x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_1*x_2*x_5 + 2*x_2^2*x_5 - x_1*x_3*x_5 - x_2*x_3*x_5 + x_3^2*x_5 + 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_1*x_5^2 - x_2*x_5^2 - x_3*x_5^2
+I_sing = Ideal (x_4 - x_5, x_3, x_2, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 5
+Sing_L_k = [(0 : 0 : 0 : 1 : 1)]
+StdConicBundleErrorCount(F,q): 5
+F = 2*x_1^3 - x_1^2*x_2 + x_1*x_2^2 - 2*x_2^3 + 2*x_1^2*x_3 - 2*x_2^2*x_3 + 2*x_1*x_3^2 + x_2*x_3^2 + 2*x_1^2*x_4 - 2*x_1*x_2*x_4 + x_2^2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_3^2*x_4 + 2*x_1*x_4^2 + 2*x_2*x_4^2 - 2*x_1*x_2*x_5 + x_2^2*x_5 + x_1*x_3*x_5 - x_2*x_3*x_5 - 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 + x_3*x_4*x_5 - x_1*x_5^2 - x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = 2*x_1^3 + 2*x_1^2*x_2 - 2*x_1*x_2^2 - x_2^3 + 2*x_1^2*x_3 + 2*x_1*x_2*x_3 + 2*x_2^2*x_3 + 2*x_1*x_3^2 - x_1^2*x_4 - 2*x_1*x_3*x_4 - 2*x_3^2*x_4 - x_1*x_4^2 + 2*x_2*x_4^2 - 2*x_3*x_4^2 + 2*x_1^2*x_5 - 2*x_1*x_2*x_5 - x_2^2*x_5 - x_2*x_3*x_5 - 2*x_1*x_4*x_5 - x_2*x_4*x_5 - x_3*x_4*x_5 + x_1*x_5^2 - 2*x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = x_1^3 - x_1^2*x_2 + x_1*x_2^2 + x_1^2*x_3 - x_1*x_2*x_3 - x_2^2*x_3 - 2*x_1*x_3^2 - 2*x_2*x_3^2 + x_3^3 + 2*x_1^2*x_4 + x_1*x_2*x_4 - x_2^2*x_4 + 2*x_1*x_3*x_4 - 2*x_1*x_4^2 + x_2*x_4^2 + x_3*x_4^2 + 2*x_1^2*x_5 + 2*x_2^2*x_5 + 2*x_1*x_3*x_5 - 2*x_2*x_3*x_5 - 2*x_3^2*x_5 + 2*x_1*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = -2*x_1^3 - 2*x_1^2*x_2 + 2*x_1*x_2^2 + x_2^3 + 2*x_1^2*x_3 - x_1*x_2*x_3 - 2*x_2^2*x_3 + 2*x_2*x_3^2 + x_3^3 - x_1^2*x_4 + x_1*x_2*x_4 + 2*x_2^2*x_4 + 2*x_2*x_3*x_4 - x_1*x_4^2 - x_2*x_4^2 - 2*x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_1*x_2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 + x_2*x_3*x_5 - x_1*x_4*x_5 - 2*x_3*x_4*x_5 + x_1*x_5^2 - 2*x_2*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = -x_1^3 - 2*x_1^2*x_2 - 2*x_1*x_2^2 + x_2^3 + x_1^2*x_3 + 2*x_2^2*x_3 - x_1*x_3^2 - 2*x_3^3 - x_1^2*x_4 - 2*x_1*x_2*x_4 + x_2^2*x_4 - 2*x_2*x_3*x_4 - x_1*x_4^2 + x_2*x_4^2 - x_1*x_2*x_5 + x_2^2*x_5 + 2*x_1*x_3*x_5 - 2*x_2*x_3*x_5 - x_3^2*x_5 - 2*x_1*x_4*x_5 + 2*x_3*x_4*x_5 - x_1*x_5^2 - x_2*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = -2*x_1^3 + x_1^2*x_2 - 2*x_1*x_2^2 - x_2^3 - x_1^2*x_3 - 2*x_2^2*x_3 + x_1*x_3^2 - x_1^2*x_4 - x_1*x_2*x_4 + 2*x_2^2*x_4 - 2*x_1*x_3*x_4 - x_2*x_3*x_4 + 2*x_3^2*x_4 + 2*x_2*x_4^2 + x_3*x_4^2 - 2*x_1^2*x_5 + x_1*x_2*x_5 + 2*x_2^2*x_5 - x_2*x_3*x_5 + x_3^2*x_5 - 2*x_2*x_5^2 - x_3*x_5^2
+I_sing = Ideal (x_3, x_2, x_1, x_4^2 - x_5^2) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -5
+Sing_L_k = [(0 : 0 : 0 : 1 : 1), (0 : 0 : 0 : 4 : 1)]
+StdConicBundleErrorCount(F,q): -5
+F = 2*x_1^3 + 2*x_1^2*x_2 - x_1*x_2^2 + 2*x_2^3 + 2*x_1^2*x_3 + x_1*x_2*x_3 + 2*x_2^2*x_3 - x_1*x_3^2 - 2*x_2*x_3^2 + 2*x_3^3 + 2*x_1^2*x_4 + x_2^2*x_4 + 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 - 2*x_3^2*x_4 + x_1*x_4^2 + 2*x_2*x_4^2 - 2*x_3*x_4^2 - 2*x_1*x_2*x_5 - x_2^2*x_5 - x_1*x_3*x_5 - 2*x_2*x_3*x_5 + x_3^2*x_5 - x_2*x_4*x_5 - 2*x_3*x_4*x_5 - x_1*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = -x_1^3 + 2*x_1^2*x_2 + 2*x_1*x_2^2 - x_2^3 + x_1^2*x_3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_2*x_3^2 - 2*x_3^3 - x_1^2*x_4 - x_2^2*x_4 - 2*x_2*x_3*x_4 - 2*x_3^2*x_4 - x_1*x_4^2 + x_2*x_4^2 - x_3*x_4^2 + x_1^2*x_5 - 2*x_1*x_2*x_5 + 2*x_2^2*x_5 + x_2*x_3*x_5 + 2*x_3^2*x_5 - x_1*x_4*x_5 - 2*x_2*x_4*x_5 - x_3*x_4*x_5 + 2*x_1*x_5^2 - 2*x_2*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = x_1^3 + 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 - x_2*x_3^2 - x_1^2*x_4 + 2*x_1*x_2*x_4 - 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 - 2*x_3^2*x_4 + 2*x_1*x_4^2 - x_2*x_4^2 - x_3*x_4^2 + x_1*x_2*x_5 + x_2^2*x_5 - 2*x_1*x_3*x_5 + 2*x_3^2*x_5 + 2*x_1*x_4*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 - x_1*x_5^2 + x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = -x_1^2*x_2 - x_1*x_2^2 - x_2^3 + x_1^2*x_3 + 2*x_1*x_3^2 - x_2*x_3^2 + 2*x_3^3 - x_1*x_2*x_4 + x_2^2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_3^2*x_4 + x_1*x_4^2 + 2*x_2*x_4^2 + 2*x_3*x_4^2 + 2*x_1^2*x_5 - x_1*x_2*x_5 + x_1*x_3*x_5 + 2*x_2*x_3*x_5 - 2*x_3^2*x_5 - 2*x_1*x_4*x_5 - x_2*x_4*x_5 - x_1*x_5^2 + 2*x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = x_1^3 + x_1*x_2^2 + 2*x_2^3 + x_1*x_2*x_3 + x_1*x_3^2 + 2*x_2*x_3^2 - x_3^3 + x_1^2*x_4 - 2*x_1*x_2*x_4 + x_2^2*x_4 + x_1*x_3*x_4 + 2*x_2*x_3*x_4 - 2*x_3^2*x_4 - x_1*x_4^2 + x_3*x_4^2 + x_1^2*x_5 + 2*x_1*x_2*x_5 - 2*x_1*x_3*x_5 + 2*x_2*x_3*x_5 - x_3^2*x_5 + 2*x_1*x_4*x_5 + x_3*x_4*x_5 - 2*x_1*x_5^2 + x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = x_1^3 - 2*x_1^2*x_2 - x_1*x_2^2 - 2*x_2^3 + 2*x_1^2*x_3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_2*x_3^2 - x_1^2*x_4 + x_1*x_2*x_4 + x_2^2*x_4 + x_3^2*x_4 - 2*x_1*x_4^2 + 2*x_2*x_4^2 + x_3*x_4^2 - x_1^2*x_5 + x_1*x_2*x_5 - 2*x_2^2*x_5 + x_1*x_3*x_5 - 2*x_3^2*x_5 + 2*x_1*x_4*x_5 - x_3*x_4*x_5 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 20
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 20
+F = x_1^3 - 2*x_1*x_2^2 + x_1*x_2*x_3 - x_2^2*x_3 + x_1*x_3^2 + 2*x_2*x_3^2 - x_3^3 + 2*x_1*x_2*x_4 + x_2^2*x_4 - x_2*x_3*x_4 - 2*x_2*x_4^2 - 2*x_3*x_4^2 - x_1^2*x_5 + x_2^2*x_5 - x_1*x_3*x_5 - 2*x_3^2*x_5 - x_2*x_4*x_5 - 2*x_3*x_4*x_5 - x_3*x_5^2
+I_sing = Ideal (x_4 - 2*x_5, x_3 + x_5, x_2 + x_5, x_1 - 2*x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = 2*x_1^3 - 2*x_1*x_2^2 + 2*x_2^3 - 2*x_1^2*x_3 + 2*x_2^2*x_3 - 2*x_1*x_3^2 - 2*x_2*x_3^2 - x_3^3 - 2*x_1^2*x_4 - 2*x_1*x_2*x_4 + 2*x_2^2*x_4 + 2*x_1*x_3*x_4 + x_2*x_3*x_4 - 2*x_3^2*x_4 + x_1^2*x_5 + 2*x_1*x_2*x_5 - 2*x_2^2*x_5 + x_1*x_3*x_5 - 2*x_2*x_3*x_5 - x_3^2*x_5 - 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 + x_1*x_5^2 - x_2*x_5^2 + x_3*x_5^2
+I_sing = Ideal (x_5, x_3, x_2, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -5
+Sing_L_k = [(0 : 0 : 0 : 1 : 0)]
+StdConicBundleErrorCount(F,q): -5
+F = 2*x_1^3 - x_1^2*x_2 + 2*x_1*x_2^2 - x_2^3 + 2*x_1^2*x_3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 + x_2*x_3^2 - x_3^3 - 2*x_1^2*x_4 + 2*x_1*x_2*x_4 - 2*x_2^2*x_4 - x_1*x_4^2 + x_2*x_4^2 + x_3*x_4^2 - x_1^2*x_5 - x_1*x_2*x_5 + x_2^2*x_5 - 2*x_1*x_3*x_5 - x_2*x_3*x_5 - 2*x_3^2*x_5 - x_1*x_4*x_5 - x_2*x_4*x_5 + 2*x_3*x_4*x_5 - 2*x_1*x_5^2 - x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = x_1*x_2^2 - x_2^3 + 2*x_1*x_2*x_3 + 2*x_2^2*x_3 + 2*x_1*x_3^2 - 2*x_2*x_3^2 - x_3^3 - x_1^2*x_4 - x_1*x_2*x_4 - 2*x_2^2*x_4 - 2*x_1*x_3*x_4 + x_2*x_3*x_4 + x_3^2*x_4 - 2*x_1*x_4^2 + x_2*x_4^2 - 2*x_3*x_4^2 + 2*x_1^2*x_5 + x_1*x_2*x_5 - 2*x_1*x_3*x_5 + 2*x_2*x_3*x_5 + x_3^2*x_5 + 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + x_3*x_4*x_5 - 2*x_1*x_5^2 + x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 25
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 25
+F = 2*x_1^3 + 2*x_1^2*x_2 - x_1*x_2^2 + 2*x_2^3 + x_1^2*x_3 - 2*x_2^2*x_3 + 2*x_1*x_3^2 - x_2*x_3^2 + x_3^3 - 2*x_1^2*x_4 + x_1*x_2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_3^2*x_4 - x_1*x_4^2 - x_2*x_4^2 + x_3*x_4^2 - 2*x_1^2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 + 2*x_2*x_3*x_5 - 2*x_3^2*x_5 + 2*x_1*x_4*x_5 + x_2*x_4*x_5 + 2*x_3*x_4*x_5 + 2*x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): -15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -15
+F = 2*x_1^2*x_2 + x_1*x_2^2 - x_2^3 + x_1^2*x_3 + x_1*x_2*x_3 + 2*x_2^2*x_3 + 2*x_1*x_3^2 + 2*x_2*x_3^2 - 2*x_3^3 - x_1^2*x_4 - 2*x_1*x_2*x_4 + x_2*x_3*x_4 + x_3^2*x_4 + x_1*x_4^2 + 2*x_2*x_4^2 - x_3*x_4^2 + 2*x_1^2*x_5 + 2*x_1*x_2*x_5 + x_2^2*x_5 + x_1*x_3*x_5 + x_2*x_3*x_5 - x_3^2*x_5 - 2*x_3*x_4*x_5 - x_1*x_5^2 - 2*x_2*x_5^2
+I_sing = Ideal (x_3, x_1 + 2*x_2, x_4^2 + 2*x_2*x_5 - 2*x_4*x_5 - 2*x_5^2, x_2^2 - x_2*x_4 - x_2*x_5 - x_4*x_5 + 2*x_5^2) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 30
+StdConicBundleErrorCount(F,q): X contains a possibly relevant geometric plane; abort.
+F = x_1^3 - x_1*x_2^2 - 2*x_2^3 + 2*x_1^2*x_3 + x_1*x_2*x_3 + 2*x_2^2*x_3 + 2*x_1*x_3^2 - 2*x_2*x_3^2 + 2*x_3^3 + 2*x_1^2*x_4 + x_1*x_2*x_4 - 2*x_2^2*x_4 + 2*x_1*x_3*x_4 - x_2*x_3*x_4 + 2*x_3^2*x_4 + x_1*x_4^2 + x_2*x_4^2 - 2*x_3*x_4^2 + 2*x_1^2*x_5 - x_1*x_2*x_5 + x_1*x_3*x_5 + x_2*x_3*x_5 - x_3^2*x_5 + x_1*x_4*x_5 - x_2*x_4*x_5 + x_1*x_5^2 - x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = -2*x_1^3 + 2*x_1*x_2^2 + 2*x_1^2*x_3 - 2*x_1*x_2*x_3 + 2*x_2^2*x_3 - x_2*x_3^2 - 2*x_1^2*x_4 - x_2^2*x_4 + 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 + 2*x_3^2*x_4 + x_1*x_4^2 - x_2*x_4^2 + 2*x_3*x_4^2 - 2*x_1*x_2*x_5 + x_2^2*x_5 + x_1*x_3*x_5 - 2*x_2*x_3*x_5 + x_3^2*x_5 + 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 + x_1*x_5^2 - 2*x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 25
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 25
+F = 2*x_1^3 - x_1^2*x_2 - 2*x_2^3 - 2*x_1^2*x_3 - 2*x_1*x_2*x_3 + x_2^2*x_3 - 2*x_1*x_3^2 + 2*x_2*x_3^2 + x_2^2*x_4 - x_1*x_3*x_4 + x_2*x_3*x_4 + x_3^2*x_4 - x_1*x_4^2 - x_2*x_4^2 + x_3*x_4^2 + 2*x_1^2*x_5 - 2*x_1*x_2*x_5 - x_1*x_3*x_5 + x_3^2*x_5 + 2*x_1*x_4*x_5 + x_2*x_4*x_5 - x_1*x_5^2 - 2*x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = 2*x_1^3 + x_1^2*x_2 + x_1*x_2^2 + x_2^3 + 2*x_1^2*x_3 + x_2*x_3^2 + x_1^2*x_4 - x_1*x_2*x_4 + 2*x_2^2*x_4 + x_1*x_3*x_4 + x_2*x_3*x_4 + x_1*x_4^2 + x_2*x_4^2 + x_3*x_4^2 - x_1^2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 - 2*x_3^2*x_5 + x_1*x_4*x_5 - 2*x_2*x_4*x_5 - x_1*x_5^2 + 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = -x_1^2*x_2 + x_1*x_2^2 + x_2^3 - 2*x_1^2*x_3 + x_1*x_2*x_3 + 2*x_2^2*x_3 + x_3^3 - 2*x_1^2*x_4 + 2*x_1*x_2*x_4 - 2*x_2*x_3*x_4 - x_2*x_4^2 + 2*x_1^2*x_5 - x_1*x_2*x_5 + 2*x_2^2*x_5 - 2*x_1*x_3*x_5 + 2*x_2*x_3*x_5 - x_3^2*x_5 + x_1*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_1*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): -15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -15
+F = -2*x_1^3 + x_1^2*x_2 + 2*x_1*x_2^2 - x_2^3 - x_1^2*x_3 + x_1*x_2*x_3 + x_2^2*x_3 + x_1*x_3^2 + x_2*x_3^2 - 2*x_3^3 + x_1^2*x_4 - 2*x_1*x_2*x_4 + 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_3^2*x_4 - x_1*x_4^2 - x_2*x_4^2 + x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_2^2*x_5 - 2*x_1*x_3*x_5 - 2*x_2*x_3*x_5 - 2*x_3^2*x_5 - 2*x_3*x_4*x_5 - x_1*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = x_1^2*x_2 + x_1*x_2^2 + x_1*x_2*x_3 + x_2^2*x_3 - x_1*x_3^2 - x_2*x_3^2 - x_3^3 + 2*x_1*x_2*x_4 + 2*x_2^2*x_4 + x_1*x_3*x_4 + 2*x_2*x_3*x_4 - x_3^2*x_4 + 2*x_1*x_4^2 + 2*x_2*x_4^2 - x_3*x_4^2 - x_1^2*x_5 - 2*x_1*x_2*x_5 - 2*x_2^2*x_5 - 2*x_1*x_3*x_5 + 2*x_2*x_3*x_5 + 2*x_3^2*x_5 + x_1*x_4*x_5 - 2*x_1*x_5^2 + x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = 2*x_1^3 - 2*x_1^2*x_2 - x_1*x_2^2 + x_2^3 - 2*x_1^2*x_3 + 2*x_2^2*x_3 + x_1*x_3^2 - 2*x_2*x_3^2 - x_3^3 + x_1^2*x_4 - x_1*x_2*x_4 + x_2^2*x_4 - 2*x_1*x_3*x_4 + x_1*x_4^2 - x_2*x_4^2 - 2*x_3*x_4^2 - x_1^2*x_5 + x_1*x_2*x_5 - x_2^2*x_5 - x_2*x_3*x_5 - 2*x_3^2*x_5 + 2*x_1*x_4*x_5 + x_2*x_4*x_5 - x_3*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2 + x_3*x_5^2
+I_sing = Ideal (x_2 + 2*x_3 + 2*x_4 - 2*x_5, x_1 - 2*x_4 + x_5, x_4^2 - 2*x_3*x_5 + x_4*x_5 + 2*x_5^2, x_3*x_4 + x_3*x_5 - x_5^2, x_3^2 - x_3*x_5 + 2*x_4*x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = -2*x_2^3 + x_1^2*x_3 + 2*x_1*x_2*x_3 - x_1*x_3^2 + x_2*x_3^2 - x_3^3 + x_1^2*x_4 + x_1*x_2*x_4 + 2*x_2^2*x_4 - 2*x_1*x_3*x_4 + 2*x_3^2*x_4 + x_1*x_4^2 - x_2*x_4^2 - x_3*x_4^2 + x_1^2*x_5 + x_3^2*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 + x_1*x_5^2 - x_2*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = -2*x_1^3 + 2*x_1^2*x_2 + x_2^3 - 2*x_1^2*x_3 + 2*x_1*x_2*x_3 - 2*x_2^2*x_3 + x_2*x_3^2 - x_3^3 - x_1*x_2*x_4 - x_2^2*x_4 - 2*x_1*x_3*x_4 + x_2*x_3*x_4 + x_2*x_4^2 + 2*x_3*x_4^2 - x_1^2*x_5 - x_1*x_2*x_5 + 2*x_1*x_3*x_5 - 2*x_2*x_3*x_5 - 2*x_1*x_4*x_5 - x_2*x_4*x_5 + 2*x_3*x_4*x_5 + 2*x_2*x_5^2
+I_sing = Ideal (x_4 + x_5, x_3 + x_5, x_2 + x_5, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = -2*x_1^2*x_2 - x_1*x_2^2 + x_2^3 + x_1^2*x_3 - x_1*x_2*x_3 + 2*x_2^2*x_3 - 2*x_1*x_3^2 + x_2*x_3^2 - x_3^3 - 2*x_1^2*x_4 + x_1*x_2*x_4 + 2*x_2^2*x_4 + 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 + 2*x_1*x_4^2 + x_2*x_4^2 + 2*x_3*x_4^2 - 2*x_1^2*x_5 + x_2*x_3*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5 - x_2*x_4*x_5 - x_3*x_4*x_5 - 2*x_1*x_5^2 + x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = -x_1^3 + 2*x_1^2*x_2 - 2*x_2^3 - x_1^2*x_3 - x_1*x_2*x_3 + x_2^2*x_3 + x_1*x_3^2 - x_2*x_3^2 - x_3^3 + x_1^2*x_4 + x_1*x_2*x_4 - 2*x_2^2*x_4 - 2*x_1*x_3*x_4 + x_2*x_3*x_4 + 2*x_3^2*x_4 + 2*x_1^2*x_5 - 2*x_1*x_3*x_5 + 2*x_2*x_3*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 - x_2*x_5^2 + 2*x_3*x_5^2
+I_sing = Ideal (x_3, x_2, x_1, x_4*x_5 - x_5^2) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 25
+Sing_L_k = [(0 : 0 : 0 : 1 : 0), (0 : 0 : 0 : 1 : 1)]
+StdConicBundleErrorCount(F,q): 25
+F = -x_1^3 + 2*x_1^2*x_2 + x_1*x_2^2 + x_2^3 + x_1^2*x_3 - x_1*x_2*x_3 + 2*x_2^2*x_3 + 2*x_2*x_3^2 + 2*x_3^3 - 2*x_1^2*x_4 - 2*x_2^2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_3^2*x_4 + x_1*x_4^2 + 2*x_2*x_4^2 - 2*x_3*x_4^2 + 2*x_1^2*x_5 - 2*x_1*x_2*x_5 - 2*x_2^2*x_5 - 2*x_1*x_3*x_5 - 2*x_2*x_3*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5 + x_2*x_4*x_5 + 2*x_3*x_4*x_5 + x_1*x_5^2 - 2*x_2*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = 2*x_1^3 + 2*x_1^2*x_2 + x_2^3 + x_1^2*x_3 + x_1*x_2*x_3 + x_2^2*x_3 - 2*x_1*x_3^2 + 2*x_2*x_3^2 - 2*x_1^2*x_4 - 2*x_1*x_2*x_4 - x_1*x_3*x_4 - x_2*x_3*x_4 + x_3^2*x_4 - 2*x_1*x_4^2 + x_3*x_4^2 + x_1^2*x_5 - 2*x_1*x_2*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_1*x_5^2 - 2*x_2*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = 2*x_1^2*x_2 - x_1*x_2^2 - x_2^3 + 2*x_1^2*x_3 + 2*x_1*x_2*x_3 + 2*x_1*x_3^2 - x_2*x_3^2 + x_3^3 - 2*x_1^2*x_4 - x_1*x_2*x_4 - 2*x_1*x_3*x_4 - 2*x_3^2*x_4 + 2*x_2*x_4^2 + x_3*x_4^2 - 2*x_1^2*x_5 - 2*x_1*x_2*x_5 + x_2^2*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 + 2*x_1*x_5^2 + 2*x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = -2*x_1^3 + 2*x_1^2*x_2 + x_1*x_2^2 + 2*x_2^3 - 2*x_1^2*x_3 - x_1*x_2*x_3 - 2*x_2^2*x_3 + x_2*x_3^2 - x_3^3 - 2*x_1^2*x_4 - 2*x_1*x_2*x_4 - x_2^2*x_4 + 2*x_1*x_3*x_4 + x_2*x_3*x_4 + x_3^2*x_4 + x_2*x_4^2 + x_1^2*x_5 + x_2^2*x_5 + 2*x_2*x_3*x_5 - x_3^2*x_5 - x_1*x_4*x_5 + x_2*x_4*x_5 - 2*x_1*x_5^2 - 2*x_2*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = -x_1^2*x_2 - x_2^3 + 2*x_2^2*x_3 - 2*x_1*x_3^2 + 2*x_2*x_3^2 + 2*x_3^3 - x_1^2*x_4 + x_1*x_2*x_4 + 2*x_1*x_3*x_4 - x_3^2*x_4 + x_1*x_4^2 - x_2*x_4^2 - 2*x_3*x_4^2 - x_1^2*x_5 - 2*x_1*x_2*x_5 + 2*x_2^2*x_5 + 2*x_1*x_3*x_5 - 2*x_2*x_3*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 + 2*x_3*x_4*x_5 + 2*x_1*x_5^2 - 2*x_2*x_5^2
+I_sing = Ideal (x_4 - x_5, x_3, x_2 - x_5, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = -x_1^3 - 2*x_1^2*x_2 - 2*x_1*x_2^2 - 2*x_2^3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 + 2*x_3^3 + 2*x_1*x_2*x_4 - 2*x_2^2*x_4 + x_1*x_3*x_4 - 2*x_2*x_3*x_4 + 2*x_1*x_4^2 + 2*x_3*x_4^2 - x_1*x_2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 + x_2*x_3*x_5 + 2*x_3^2*x_5 + x_1*x_4*x_5 + x_2*x_4*x_5 + x_3*x_4*x_5 - x_1*x_5^2 - 2*x_2*x_5^2 - x_3*x_5^2
+I_sing = Ideal (x_4, x_3 + 2*x_5, x_2 + 2*x_5, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = -x_1^2*x_2 + x_2^3 - x_1^2*x_3 - 2*x_1*x_2*x_3 + 2*x_2^2*x_3 + 2*x_2*x_3^2 + 2*x_3^3 - 2*x_1^2*x_4 - 2*x_1*x_2*x_4 - x_1*x_3*x_4 - x_2*x_3*x_4 - x_3^2*x_4 - 2*x_1*x_4^2 + x_2*x_4^2 - x_3*x_4^2 - x_1^2*x_5 - x_1*x_2*x_5 - 2*x_2^2*x_5 - x_1*x_3*x_5 + x_2*x_3*x_5 + 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + 2*x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): 15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 15
+F = -2*x_1^3 + x_2^3 - x_1^2*x_3 - 2*x_1*x_2*x_3 + x_2^2*x_3 + x_1*x_3^2 - x_2*x_3^2 - x_3^3 - 2*x_1^2*x_4 - 2*x_1*x_2*x_4 + 2*x_2^2*x_4 - 2*x_2*x_3*x_4 - x_1*x_4^2 - 2*x_2*x_4^2 - x_3*x_4^2 + 2*x_1^2*x_5 + 2*x_1*x_2*x_5 - x_2*x_3*x_5 - 2*x_3^2*x_5 + x_2*x_4*x_5 + 2*x_3*x_4*x_5 - x_3*x_5^2
+LazyErrorCount(F,q): -15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -15
+F = -x_2^3 - 2*x_1^2*x_3 - 2*x_1*x_2*x_3 - x_2^2*x_3 - x_1*x_3^2 + x_2*x_3^2 + 2*x_3^3 + 2*x_1*x_2*x_4 - x_2^2*x_4 - 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 - x_3^2*x_4 - x_1*x_4^2 - x_2*x_4^2 + 2*x_3*x_4^2 - 2*x_1*x_2*x_5 + x_2^2*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5 + 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = x_1^3 + 2*x_1^2*x_2 + x_2^3 - x_1*x_2*x_3 + 2*x_2^2*x_3 - x_1*x_3^2 - x_2*x_3^2 + x_3^3 - 2*x_1^2*x_4 - 2*x_1*x_2*x_4 + 2*x_2^2*x_4 - x_1*x_3*x_4 + x_3^2*x_4 + 2*x_1*x_4^2 - x_2*x_4^2 + 2*x_3*x_4^2 - 2*x_1^2*x_5 - 2*x_1*x_2*x_5 + 2*x_2^2*x_5 - x_1*x_3*x_5 + 2*x_2*x_3*x_5 - x_1*x_4*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 - x_2*x_5^2 - 2*x_3*x_5^2
+I_sing = Ideal (x_4 + 2*x_5, x_3, x_2 + 2*x_5, x_1 - 2*x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): -15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -15
+F = -2*x_1^2*x_2 - 2*x_1*x_2^2 - 2*x_1^2*x_3 - x_1*x_2*x_3 + 2*x_1*x_3^2 - 2*x_2*x_3^2 + 2*x_3^3 + x_1*x_2*x_4 - 2*x_2*x_3*x_4 + x_3^2*x_4 + x_1*x_4^2 + 2*x_2*x_4^2 - x_3*x_4^2 - 2*x_1^2*x_5 + x_1*x_2*x_5 - x_2^2*x_5 - x_1*x_3*x_5 - 2*x_2*x_3*x_5 - x_3*x_4*x_5 + 2*x_2*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = -2*x_1^3 - x_1^2*x_2 - 2*x_1*x_2^2 - x_2^3 - 2*x_1*x_2*x_3 + 2*x_2^2*x_3 - x_1*x_3^2 - 2*x_2*x_3^2 + x_3^3 - x_1^2*x_4 - 2*x_1*x_2*x_4 - 2*x_2^2*x_4 + x_1*x_3*x_4 - x_2*x_3*x_4 + x_3^2*x_4 + 2*x_1*x_4^2 + x_3*x_4^2 - x_1^2*x_5 + 2*x_1*x_2*x_5 + 2*x_2^2*x_5 - 2*x_1*x_3*x_5 + x_2*x_3*x_5 + x_3^2*x_5 + x_1*x_4*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 + x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = -x_1^3 - 2*x_2^3 - 2*x_1^2*x_3 - x_2^2*x_3 - 2*x_1*x_3^2 - x_2*x_3^2 - x_3^3 - x_1^2*x_4 - x_1*x_2*x_4 - 2*x_2^2*x_4 - 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_3^2*x_4 - x_1*x_4^2 - x_2*x_4^2 + x_3*x_4^2 + x_1^2*x_5 + x_2^2*x_5 + x_1*x_3*x_5 + 2*x_2*x_3*x_5 + x_3^2*x_5 - x_1*x_4*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_2*x_5^2
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = -2*x_1^3 + x_1^2*x_2 + 2*x_1*x_2^2 - x_1^2*x_3 - x_1*x_2*x_3 - x_2^2*x_3 - x_2*x_3^2 + 2*x_3^3 - 2*x_1^2*x_4 - 2*x_1*x_2*x_4 - 2*x_2^2*x_4 - x_1*x_3*x_4 + 2*x_2*x_3*x_4 - x_3^2*x_4 - 2*x_1*x_4^2 + x_2*x_4^2 + x_1*x_2*x_5 - x_2*x_3*x_5 - 2*x_3^2*x_5 - x_1*x_4*x_5 - 2*x_2*x_4*x_5 - x_3*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = 2*x_1^3 + x_1^2*x_2 - 2*x_1*x_2^2 + x_1^2*x_3 + x_1*x_2*x_3 - 2*x_2^2*x_3 - x_1*x_3^2 - 2*x_1^2*x_4 - 2*x_1*x_2*x_4 + x_2^2*x_4 + 2*x_1*x_3*x_4 + 2*x_1*x_4^2 - 2*x_2*x_4^2 - x_1^2*x_5 - x_1*x_2*x_5 + 2*x_2^2*x_5 - 2*x_1*x_3*x_5 - 2*x_1*x_4*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 + x_1*x_5^2 - 2*x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = -2*x_1^2*x_2 + 2*x_1*x_2^2 - x_2^3 + 2*x_1*x_2*x_3 - 2*x_2^2*x_3 + x_1*x_3^2 - 2*x_2*x_3^2 + x_3^3 + 2*x_1^2*x_4 + x_1*x_2*x_4 - 2*x_2^2*x_4 + 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 + 2*x_3^2*x_4 - x_1*x_4^2 + 2*x_2*x_4^2 - x_3*x_4^2 + x_1^2*x_5 - 2*x_2^2*x_5 - x_1*x_3*x_5 - x_3^2*x_5 - 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + x_3*x_4*x_5 + x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = x_1^3 - x_1^2*x_2 + x_1*x_2^2 - x_2^3 + x_1*x_2*x_3 + x_2^2*x_3 + 2*x_1*x_3^2 - x_2*x_3^2 - x_1^2*x_4 - x_1*x_2*x_4 - 2*x_2^2*x_4 - x_1*x_3*x_4 + x_2*x_3*x_4 - 2*x_3^2*x_4 - x_1*x_4^2 - 2*x_2*x_4^2 + x_3*x_4^2 - 2*x_1^2*x_5 - 2*x_1*x_2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 - x_3^2*x_5 + 2*x_1*x_4*x_5 + x_2*x_4*x_5 + x_3*x_4*x_5 - x_1*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = x_1^3 + 2*x_2^3 + x_1^2*x_3 - x_2^2*x_3 + x_1*x_3^2 - 2*x_2*x_3^2 - 2*x_3^3 - 2*x_1*x_2*x_4 - x_2^2*x_4 - x_2*x_3*x_4 - 2*x_1*x_4^2 - 2*x_2*x_4^2 - x_3*x_4^2 - x_1^2*x_5 - 2*x_1*x_2*x_5 + x_2^2*x_5 + x_1*x_3*x_5 - 2*x_2*x_3*x_5 + 2*x_1*x_4*x_5 + x_2*x_4*x_5 + x_3*x_4*x_5 - 2*x_1*x_5^2 + 2*x_2*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = 2*x_1^3 + 2*x_1*x_2^2 + 2*x_2^3 + x_1*x_2*x_3 - x_2^2*x_3 + x_1*x_3^2 + x_2*x_3^2 - x_3^3 + x_1*x_2*x_4 - 2*x_2^2*x_4 + 2*x_2*x_3*x_4 + 2*x_3^2*x_4 - 2*x_1*x_4^2 - 2*x_2*x_4^2 + x_3*x_4^2 - 2*x_1^2*x_5 + 2*x_1*x_2*x_5 - x_2^2*x_5 - 2*x_1*x_3*x_5 - x_2*x_3*x_5 - 2*x_1*x_4*x_5 + 2*x_3*x_4*x_5 + x_1*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = 2*x_1^3 + x_1^2*x_2 + 2*x_1*x_2^2 - 2*x_2^3 + x_1*x_2*x_3 - 2*x_2^2*x_3 + x_1*x_3^2 - 2*x_3^3 + 2*x_1*x_2*x_4 + x_1*x_3*x_4 - 2*x_2*x_3*x_4 - 2*x_3^2*x_4 - 2*x_2*x_4^2 + 2*x_3*x_4^2 + 2*x_1*x_2*x_5 + 2*x_2*x_3*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + x_3*x_4*x_5 - x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+I_sing = Ideal (x_3 + 2*x_4 - x_5, x_2 - x_4 - 2*x_5, x_1 - x_4 + 2*x_5, x_4^2 + x_4*x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = -2*x_1^3 - 2*x_1^2*x_2 + x_1*x_2^2 - x_2^3 - 2*x_1^2*x_3 - 2*x_1*x_2*x_3 + 2*x_2^2*x_3 - 2*x_2*x_3^2 - 2*x_3^3 + x_1^2*x_4 - x_1*x_2*x_4 - x_2^2*x_4 - 2*x_1*x_3*x_4 - x_3^2*x_4 - 2*x_1*x_4^2 - 2*x_2*x_4^2 + x_3*x_4^2 - x_1^2*x_5 - 2*x_1*x_2*x_5 - 2*x_1*x_3*x_5 - x_2*x_3*x_5 + 2*x_3^2*x_5 + 2*x_1*x_4*x_5 + x_3*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 20
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 20
+F = x_1^3 + x_1^2*x_2 - x_1*x_2^2 - x_2^3 - x_1^2*x_3 + x_1*x_2*x_3 + 2*x_1*x_3^2 - x_2*x_3^2 + x_1*x_2*x_4 + x_1*x_3*x_4 + 2*x_3^2*x_4 + 2*x_1*x_4^2 + x_2*x_4^2 + 2*x_3*x_4^2 - x_1^2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 - 2*x_3^2*x_5 - x_1*x_4*x_5 + 2*x_2*x_4*x_5 + x_1*x_5^2 - 2*x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 0
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 0
+F = 2*x_1*x_2^2 + x_2^3 + 2*x_1^2*x_3 - x_1*x_2*x_3 - 2*x_2^2*x_3 - x_1*x_3^2 + x_3^3 + x_1^2*x_4 - 2*x_1*x_2*x_4 - 2*x_2^2*x_4 - 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 - 2*x_3^2*x_4 - x_1*x_4^2 + x_3*x_4^2 - 2*x_1*x_2*x_5 + 2*x_2^2*x_5 - x_1*x_3*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5 + x_2*x_4*x_5 - x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = 2*x_1^3 + x_1^2*x_2 - x_2^3 + 2*x_1^2*x_3 + x_1*x_2*x_3 - x_2^2*x_3 - 2*x_1*x_3^2 - x_3^3 + 2*x_1^2*x_4 - x_1*x_2*x_4 + x_1*x_3*x_4 - x_2*x_4^2 + 2*x_3*x_4^2 + x_1^2*x_5 - x_1*x_2*x_5 + x_2^2*x_5 + 2*x_1*x_3*x_5 - x_2*x_3*x_5 - x_3^2*x_5 + 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + x_3*x_4*x_5 + x_1*x_5^2 + x_2*x_5^2 - x_3*x_5^2
+LazyErrorCount(F,q): -15
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -15
+F = -x_1^2*x_2 + 2*x_1*x_2^2 - x_2^3 - 2*x_1^2*x_3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 - 2*x_2*x_3^2 + x_3^3 + x_1^2*x_4 - x_1*x_2*x_4 - x_2^2*x_4 + 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_3*x_4^2 + x_1^2*x_5 - 2*x_2^2*x_5 + 2*x_1*x_3*x_5 + 2*x_3^2*x_5 + 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 + x_3*x_4*x_5 + x_1*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = 2*x_1^3 + 2*x_1^2*x_2 + 2*x_1*x_2^2 + 2*x_2^3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 - x_1^2*x_4 - 2*x_1*x_2*x_4 - 2*x_2^2*x_4 - 2*x_1*x_3*x_4 + 2*x_2*x_3*x_4 - 2*x_3^2*x_4 + 2*x_2*x_4^2 - x_1^2*x_5 + 2*x_2^2*x_5 + x_2*x_3*x_5 + 2*x_3^2*x_5 + x_1*x_4*x_5 + 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 - x_1*x_5^2 + 2*x_2*x_5^2 + 2*x_3*x_5^2
+I_sing = Ideal (x_2, x_1 - x_3 - x_5, x_4^2 + 2*x_4*x_5, x_3*x_4 + 2*x_4*x_5, x_3^2 - 2*x_4*x_5 + 2*x_5^2) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = x_2^3 - x_1^2*x_3 - 2*x_1*x_2*x_3 - 2*x_1*x_3^2 - 2*x_2*x_3^2 - 2*x_3^3 - x_1^2*x_4 - 2*x_1*x_2*x_4 - 2*x_2^2*x_4 + x_1*x_3*x_4 - 2*x_1*x_4^2 - 2*x_2*x_4^2 - x_3*x_4^2 + 2*x_1^2*x_5 + x_1*x_2*x_5 + 2*x_2^2*x_5 - x_1*x_3*x_5 - x_1*x_4*x_5 - x_3*x_4*x_5 - x_1*x_5^2 + 2*x_2*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = -x_1^3 + x_1^2*x_2 + 2*x_2^3 - 2*x_2^2*x_3 - x_1*x_3^2 + 2*x_3^3 - x_1^2*x_4 - 2*x_1*x_2*x_4 + 2*x_2^2*x_4 - x_1*x_3*x_4 + 2*x_2*x_3*x_4 - 2*x_3^2*x_4 - 2*x_1*x_4^2 + x_2*x_4^2 - x_1^2*x_5 - x_1*x_2*x_5 - 2*x_2^2*x_5 + x_1*x_3*x_5 - x_2*x_3*x_5 - 2*x_3^2*x_5 + 2*x_1*x_4*x_5 - 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_2*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): 25
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 25
+F = -x_1^2*x_2 - 2*x_2^3 + x_1^2*x_3 + x_1*x_2*x_3 - x_2^2*x_3 + x_2*x_3^2 + 2*x_3^3 - x_1^2*x_4 + x_1*x_3*x_4 + 2*x_2*x_3*x_4 - x_3^2*x_4 + 2*x_1*x_4^2 + 2*x_1^2*x_5 - 2*x_1*x_2*x_5 - 2*x_2^2*x_5 + x_2*x_3*x_5 + x_3^2*x_5 + x_1*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): -20
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -20
+F = 2*x_1^3 + x_1^2*x_2 + 2*x_2^3 + 2*x_1^2*x_3 - 2*x_1*x_2*x_3 + 2*x_2^2*x_3 + 2*x_1*x_3^2 + 2*x_2*x_3^2 + 2*x_1^2*x_4 + 2*x_1*x_2*x_4 - x_2^2*x_4 + 2*x_1*x_3*x_4 + 2*x_3^2*x_4 - x_1*x_4^2 - 2*x_2*x_4^2 - 2*x_3*x_4^2 + 2*x_1^2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 + 2*x_2*x_3*x_5 - 2*x_3^2*x_5 + x_2*x_4*x_5 + x_3*x_4*x_5 + 2*x_1*x_5^2 - 2*x_3*x_5^2
+LazyErrorCount(F,q): -5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -5
+F = 2*x_1^3 - 2*x_1^2*x_2 - 2*x_2^3 + x_1^2*x_3 + 2*x_1*x_2*x_3 - x_2^2*x_3 - x_1*x_3^2 - x_1^2*x_4 - x_1*x_2*x_4 + x_2*x_3*x_4 + x_3^2*x_4 - 2*x_3*x_4^2 - 2*x_1^2*x_5 - 2*x_1*x_2*x_5 - x_2^2*x_5 - 2*x_2*x_3*x_5 - x_3^2*x_5 + x_1*x_4*x_5 - x_2*x_4*x_5 + x_3*x_4*x_5 - x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = x_1^3 - 2*x_1^2*x_2 - 2*x_1*x_2^2 - x_2^3 - 2*x_1*x_2*x_3 - 2*x_1*x_3^2 - 2*x_2*x_3^2 - 2*x_1^2*x_4 - x_1*x_2*x_4 + x_2^2*x_4 + 2*x_1*x_3*x_4 - x_3^2*x_4 - 2*x_1*x_4^2 - x_2*x_4^2 - 2*x_3*x_4^2 - 2*x_1^2*x_5 - x_1*x_3*x_5 + 2*x_2*x_3*x_5 - 2*x_3^2*x_5 - x_1*x_4*x_5 + 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_3*x_5^2
+I_sing = Ideal (x_4 + 2*x_5, x_3, x_2 + x_5, x_1 + x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 20
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 20
+F = 2*x_1*x_2^2 + 2*x_2^3 + 2*x_1^2*x_3 + x_1*x_2*x_3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 + x_2*x_3^2 - x_3^3 - x_1*x_2*x_4 + x_2^2*x_4 + 2*x_2*x_3*x_4 - 2*x_1*x_4^2 + 2*x_2*x_4^2 + x_3*x_4^2 - x_1*x_2*x_5 - 2*x_1*x_3*x_5 - 2*x_2*x_3*x_5 + 2*x_3^2*x_5 - 2*x_1*x_4*x_5 + x_2*x_4*x_5 - x_1*x_5^2 - x_2*x_5^2 + x_3*x_5^2
+I_sing = Ideal (x_4 + 2*x_5, x_3, x_2, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 15
+Sing_L_k = [(0 : 0 : 0 : 3 : 1)]
+StdConicBundleErrorCount(F,q): 15
+F = 2*x_1^3 - x_1^2*x_2 - 2*x_1*x_2^2 + x_2^3 + 2*x_1^2*x_3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 + x_1*x_3^2 + 2*x_2*x_3^2 - x_1*x_2*x_4 + x_2^2*x_4 - 2*x_2*x_3*x_4 + 2*x_2*x_4^2 - 2*x_1^2*x_5 + x_1*x_2*x_5 + 2*x_1*x_3*x_5 + x_2*x_3*x_5 + x_3^2*x_5 + x_1*x_4*x_5 + 2*x_3*x_4*x_5 + 2*x_1*x_5^2 - 2*x_2*x_5^2 + x_3*x_5^2
+I_sing = Ideal (x_4 - 2*x_5, x_3 + x_5, x_2 + 2*x_5, x_1 - x_5) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 20
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 20
+F = 2*x_1^3 - x_1*x_2^2 + x_1^2*x_3 - 2*x_2^2*x_3 - 2*x_1*x_3^2 + 2*x_2*x_3^2 - x_3^3 - 2*x_1^2*x_4 + 2*x_1*x_2*x_4 + 2*x_2^2*x_4 - 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_3^2*x_4 - 2*x_1*x_4^2 - 2*x_2*x_4^2 - 2*x_3*x_4^2 - 2*x_1^2*x_5 - 2*x_1*x_2*x_5 - x_2^2*x_5 - 2*x_1*x_3*x_5 + x_2*x_3*x_5 - x_3^2*x_5 + 2*x_1*x_4*x_5 + x_3*x_4*x_5
+I_sing = Ideal (x_4, x_3, x_2, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 15
+Sing_L_k = [(0 : 0 : 0 : 0 : 1)]
+StdConicBundleErrorCount(F,q): 15
+F = 2*x_1^3 - 2*x_1^2*x_2 + x_1*x_2^2 - 2*x_2^3 - 2*x_1^2*x_3 + x_1*x_2*x_3 - x_2^2*x_3 - x_3^3 + 2*x_1^2*x_4 - 2*x_2^2*x_4 - 2*x_1*x_3*x_4 - 2*x_2*x_3*x_4 + x_3^2*x_4 + 2*x_1*x_4^2 - x_3*x_4^2 + x_1^2*x_5 + x_1*x_2*x_5 + x_2*x_3*x_5 - x_3^2*x_5 + x_1*x_4*x_5 + 2*x_2*x_4*x_5 + 2*x_3*x_4*x_5 + x_1*x_5^2 + x_2*x_5^2
+LazyErrorCount(F,q): 10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 10
+F = -2*x_1^3 + 2*x_1*x_2^2 + 2*x_1^2*x_3 + 2*x_1*x_2*x_3 + 2*x_1*x_3^2 - 2*x_2*x_3^2 - x_3^3 - 2*x_1^2*x_4 - x_1*x_2*x_4 + x_2^2*x_4 - 2*x_1*x_3*x_4 - x_1*x_4^2 - 2*x_3*x_4^2 - 2*x_1*x_2*x_5 - 2*x_2^2*x_5 + x_1*x_3*x_5 - x_2*x_3*x_5 - 2*x_3^2*x_5 + 2*x_2*x_4*x_5 - 2*x_3*x_4*x_5 - 2*x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = -x_1^3 - 2*x_2^3 - 2*x_1^2*x_3 - 2*x_1*x_2*x_3 - 2*x_2^2*x_3 + x_3^3 + 2*x_1^2*x_4 - x_1*x_2*x_4 - 2*x_2^2*x_4 + 2*x_1*x_3*x_4 - 2*x_1*x_4^2 - x_2*x_4^2 + x_3*x_4^2 - x_1^2*x_5 - x_2^2*x_5 + x_1*x_3*x_5 - x_2*x_3*x_5 + x_3^2*x_5 + 2*x_1*x_4*x_5 + x_2*x_4*x_5 + x_3*x_4*x_5 - x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = -2*x_1^2*x_2 - 2*x_2^3 - 2*x_1^2*x_3 + 2*x_1*x_2*x_3 - x_2^2*x_3 - x_1*x_3^2 + 2*x_2*x_3^2 - x_3^3 - x_1^2*x_4 - x_1*x_2*x_4 + x_2^2*x_4 - 2*x_2*x_3*x_4 - x_3^2*x_4 + 2*x_1*x_4^2 + x_2*x_4^2 + 2*x_3*x_4^2 - 2*x_1*x_2*x_5 + 2*x_2^2*x_5 + x_2*x_3*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 - x_2*x_4*x_5 + x_3*x_4*x_5 - 2*x_1*x_5^2 + x_2*x_5^2 + x_3*x_5^2
+LazyErrorCount(F,q): 20
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 20
+F = 2*x_1^3 + 2*x_1^2*x_2 - x_1*x_2^2 - x_2^3 - x_1^2*x_3 - x_1*x_2*x_3 + x_2^2*x_3 - x_1*x_3^2 - 2*x_2*x_3^2 - 2*x_3^3 - 2*x_1*x_2*x_4 - 2*x_2^2*x_4 - x_2*x_3*x_4 - x_3^2*x_4 + x_1*x_4^2 - 2*x_2*x_4^2 + 2*x_3*x_4^2 + x_1^2*x_5 + 2*x_1*x_2*x_5 + x_1*x_3*x_5 - x_2*x_3*x_5 - 2*x_3^2*x_5 - x_1*x_4*x_5 + x_2*x_4*x_5 + x_3*x_4*x_5 - x_1*x_5^2 + x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): 5
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): 5
+F = -2*x_1^3 - 2*x_1*x_2^2 + x_2^3 - 2*x_1*x_2*x_3 + x_2^2*x_3 - x_2*x_3^2 + x_3^3 - x_1^2*x_4 + 2*x_1*x_2*x_4 + 2*x_2^2*x_4 + 2*x_1*x_3*x_4 + x_2*x_3*x_4 - 2*x_3^2*x_4 - x_1*x_4^2 - x_2*x_4^2 - x_3*x_4^2 + 2*x_1^2*x_5 + x_1*x_2*x_5 + x_1*x_3*x_5 + x_2*x_3*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 - 2*x_3*x_4*x_5 + 2*x_1*x_5^2 + x_2*x_5^2 + 2*x_3*x_5^2
+LazyErrorCount(F,q): -10
+Sing_L_k = []
+StdConicBundleErrorCount(F,q): -10
+F = -x_1^2*x_2 - 2*x_2^3 - 2*x_1^2*x_3 + x_1*x_2*x_3 - x_2^2*x_3 - x_1*x_3^2 - 2*x_2*x_3^2 + 2*x_2^2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 - 2*x_3^2*x_4 + x_1*x_4^2 + x_3*x_4^2 + x_1^2*x_5 + x_1*x_2*x_5 + 2*x_1*x_3*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 + x_1*x_5^2 - x_2*x_5^2 + x_3*x_5^2
+I_sing = Ideal (x_4 - x_5, x_3, x_2, x_1) of Multivariate Polynomial Ring in x_1, x_2, x_3, x_4, x_5 over Finite Field of size 5
+dim(I_sing) = 1
+LazyErrorCount(F,q): 10
+Sing_L_k = [(0 : 0 : 0 : 1 : 1)]
+StdConicBundleErrorCount(F,q):
+Too many output messages: 257 (at most 256 per cell -- type 'smc?' to learn how to raise this limit): attempting to terminate...
+---
