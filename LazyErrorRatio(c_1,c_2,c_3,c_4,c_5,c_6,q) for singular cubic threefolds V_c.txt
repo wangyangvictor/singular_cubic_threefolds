@@ -30,7 +30,7 @@ def LazyErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
     R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5')
     x_1, x_2, x_3, x_4, x_5 = R.gens()
     S = PolynomialRing(R, 1, 'x_6')
-    x_6 = S.gens()
+    x_6 = S.gen()
 #     We are interested in x_1^3+...+x_6^3 = c_1x_1+...+c_6x_6=0.
 #     If c_6 != 0, we can do a speedup, reducing to 5 variables using the linear equation.
     if c_6 != 0:
@@ -46,7 +46,7 @@ def LazyErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
     P.<t_1,t_2,t_3,t_4,t_5,t_6> = ProjectiveSpace(5,k)
     for p in P.rational_points():
 #         https://doc.sagemath.org/html/en/reference/schemes/sage/schemes/projective/projective_space.html
-        if F(p[0],p[1],p[2],p[3],p[4],p[5]) == H(p[0],p[1],p[2],p[3],p[4],p[5]) == 0:
+        if F(p[5])(p[0],p[1],p[2],p[3],p[4]) == H(p[5])(p[0],p[1],p[2],p[3],p[4]) == 0:
             lazy_point_count += 1
 
     E_c = lazy_point_count - (q^3 + q^2 + q + 1)
