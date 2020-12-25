@@ -47,6 +47,7 @@ def StdConicBundleErrorCount(F_std,q_size):
     Sing_L = P.subscheme(I_sing_L);
     from sage.schemes.projective.projective_rational_point import enum_projective_finite_field
     Sing_L_k = enum_projective_finite_field(Sing_L);
+#     print("Sing_L_k =", Sing_L_k)
 #     https://doc.sagemath.org/html/en/reference/schemes/sage/schemes/projective/projective_rational_point.html
 
     delta_1 = l_1*l_3 - l_2^2;
