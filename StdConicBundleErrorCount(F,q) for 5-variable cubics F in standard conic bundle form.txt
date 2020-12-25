@@ -40,15 +40,27 @@ def StdConicBundleErrorCount(F_std,q_size):
     I = R.ideal(F_std);
 #     print(I)
     X = P.subscheme(I);
-    I_sing = X.Jacobian().radical();
+    I_sing = X.Jacobian();
 #     print(I_sing)
     I_sing_L = R.ideal(I_sing+[x_1,x_2,x_3]);
 #     print(I_sing_L)
     Sing_L = P.subscheme(I_sing_L);
-    from sage.schemes.projective.projective_rational_point import enum_projective_finite_field
-    Sing_L_k = enum_projective_finite_field(Sing_L);
-#     print("Sing_L_k =", Sing_L_k)
-#     https://doc.sagemath.org/html/en/reference/schemes/sage/schemes/projective/projective_rational_point.html
+
+# #     We now enumerate Sing_L(k). The following suggestion from
+# #     https://doc.sagemath.org/html/en/reference/schemes/sage/schemes/projective/projective_rational_point.html
+# #     is too slow:
+#     from sage.schemes.projective.projective_rational_point import enum_projective_finite_field
+#     Sing_L_k = enum_projective_finite_field(Sing_L);
+
+#     Instead, we will do a for loop over L, testing membership using
+#     https://ask.sagemath.org/question/47938/check-whether-point-is-on-a-projective-variety/
+    Sing_L_k = []
+    if P.point([0,0,0,1,0]) in Sing_L:
+        Sing_L_k.append(P.point([0,0,0,1,0]))
+    for t_4 in k:
+        if P.point([0,0,0,t_4,1]) in Sing_L:
+            Sing_L_k.append(P.point([0,0,0,t_4,1]))
+    print("Sing_L_k =", Sing_L_k)
 
     delta_1 = l_1*l_3 - l_2^2;
     delta_2 = f*l_3 - q_2^2;
@@ -68,27 +80,3 @@ def StdConicBundleErrorCount(F_std,q_size):
 
     E_X = -q*q*len(Sing_L_k) + q*(2*len(real_lis) - len(lis));
     return E_X;
-
----
-Tests:
----
-
-x_1,x_2,x_3,x_4,x_5 = PolynomialRing(IntegerRing(), 5, 'x_1,x_2,x_3,x_4,x_5').gens()
-StdConicBundleErrorCount(x_4*x_5,11)
-StdConicBundleErrorCount(x_3*x_4*x_5,11)
-StdConicBundleErrorCount(x_1^3+x_2^3+x_3*x_4*x_5,11)
-StdConicBundleErrorCount(x_1^3+x_2^3+x_3^3+x_3*x_4*x_5,11)
-StdConicBundleErrorCount((2*x_1^3 + x_1*x_2*x_3 + 2*x_2^3 + x_3^3) + 2*(x_1^2+x_2*x_3)*x_4 + 2*(x_2^2+x_1*x_3)*x_5 + 2*x_3*x_4*x_5,11)
-LazyErrorCount((2*x_1^3 + x_1*x_2*x_3 + 2*x_2^3 + x_3^3) + 2*(x_1^2+x_2*x_3)*x_4 + 2*(x_2^2+x_1*x_3)*x_5 + 2*x_3*x_4*x_5,11)
-
-yields
-
-'F_std is non-homogeneous or non-cubic; abort.'
-'X contains a possibly relevant geometric plane; abort.'
-'X contains a possibly relevant geometric plane; abort.'
-'X contains a possibly relevant geometric plane; abort.'
-110
-110
-
----
-
