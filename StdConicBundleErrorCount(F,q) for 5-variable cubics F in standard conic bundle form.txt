@@ -60,7 +60,7 @@ def StdConicBundleErrorCount(F_std,q_size):
     for t_4 in k:
         if P.point([0,0,0,t_4,1]) in Sing_L:
             Sing_L_k.append(P.point([0,0,0,t_4,1]))
-    print("Sing_L_k =", Sing_L_k)
+#     print("Sing_L_k =", Sing_L_k)
 
     delta_1 = l_1*l_3 - l_2^2;
     delta_2 = f*l_3 - q_2^2;
