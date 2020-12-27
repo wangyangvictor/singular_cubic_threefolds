@@ -1,0 +1,1757 @@
+# Load StdConicBundleErrorCount(F,q)
+
+# Load CleanLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q)
+
+def CombinCodim(sign_vects):
+    M = matrix(QQ, sign_vects)
+    r = M.rank()
+    return r
+
+def CombinSpan(sign_vects):
+    for i in cartesian_product([[1],[-1,1],[-1,1],[-1,1],[-1,1],[-1,1]]):
+        M = matrix(QQ, sign_vects)
+        v = vector(QQ, list(i))
+#         https://ask.sagemath.org/question/39481/checking-if-a-subset-of-columns-of-a-matrix-span-a-given-vector/
+#         https://doc.sagemath.org/html/en/reference/matrices/sage/matrix/matrix1.html
+        if not(list(i) in sign_vects) and M.stack(v).rank() == M.rank():
+            sign_vects.append(list(i))
+    return sign_vects
+
+def Sings(c,k_given):
+    K = k_given.extension(2)
+#     print(k_given, K)
+    s = []
+    for i in range(len(c)):
+        s.append(K(c[i]).sqrt())
+    signs = []
+    for j in cartesian_product([[1],[-1,1],[-1,1],[-1,1],[-1,1],[-1,1]]):
+        if sum(j[i]*s[i]^3 for i in range(len(c))) == 0:
+            signs.append(list(j))
+    return signs
+
+# ---
+
+import random
+# random.choice([1,2,3])
+def RandSingBlock(l_given,k_given):
+    while 1:
+        c = []
+        if l_given == 1:
+            c.append(k_given.random_element())
+            return c
+        for i in range(l_given-1):
+            c.append(k_given.random_element())
+        K = k_given.extension(2)
+        s = []
+        for i in range(len(c)):
+            sqrts = K(c[i]).sqrt(all=True)
+            s.append(random.choice(sqrts))
+        test_sum = sum(s[i]^3 for i in range(len(s)))
+        try:
+            possible_cube = k_given(test_sum^2)
+        except:
+            continue
+        cube_roots = (possible_cube).nth_root(3, all=True)
+        if len(cube_roots) != 0:
+            c.append(random.choice(cube_roots))
+#             Guarantees c_l^3 = (c_1^{3/2}+...+c_{l-1}^{3/2})^2.
+            return c
+
+# print(RandSingBlock(2,GF(11)))
+# [8, 8]
+
+def Rand00Sing(k_given):
+    c = [k_given(0), k_given(0)]
+#     Guarantees c_1=c_2=0.
+    c.extend(RandSingBlock(4,k_given))
+    return c
+
+def Rand42Sing(k_given):
+    c = []
+    c.extend(RandSingBlock(4,k_given))
+    c.extend(RandSingBlock(2,k_given))
+    return c
+
+def Rand33Sing(k_given):
+    c = []
+    c.extend(RandSingBlock(3,k_given))
+    c.extend(RandSingBlock(3,k_given))
+    return c
+
+# Permutations(range(6))
+def Test222(c):
+    for P in Permutations(range(6)):
+        if c[P[0]]^3-c[P[1]]^3 == c[P[2]]^3-c[P[3]]^3 == c[P[4]]^3-c[P[5]]^3 == 0:
+            return True
+    return False
+
+# ---
+
+MAX_OUTPUT_MESSAGES = 1000
+# https://ask.sagemath.org/question/24566/too-many-output-messages/
+
+q = 997;
+# 1+5, 2+4, 3+3, 1+1+4, 1+2+3, etc...
+while 1:
+    k = GF(q, 'a')
+    trials = 0
+    while 1:
+        c = Rand00Sing(k)
+#         c = Rand42Sing(k)
+#         c = Rand33Sing(k)
+        if c[5] == 0 or c[0] == c[5]:
+            continue;
+        Sing_signs = Sings(c,k)
+        if len(Sing_signs) >= 1 and Test222(c) == False:
+            E_c_ratio = CleanLineErrorRatio(c[0],c[1],c[2],c[3],c[4],c[5],q)
+            trials += 1
+            if E_c_ratio in RationalField() and abs(E_c_ratio)^2 >= q:
+                print("Trial:", trials)
+                print("Hyperplane section:", c, "over", k)
+                print("with Sing_signs:", Sing_signs)
+                print("with CombinCodim(Sing_signs):", CombinCodim(Sing_signs))
+                print("with Test222(c) result:", Test222(c))
+                print("with E_c(q)/q =", E_c_ratio, '\n')
+
+===
+
+Preliminary results for Rand00Sing(997),
+with "Trial" requirement: len(Sing_signs) >= 1 and Test222(c) == False,
+and with "Print" requirement: E_c_ratio in RationalField() and abs(E_c_ratio)^2 >= q.
+
+(Total trials below: 211)
+
+---
+Trial: 1
+Hyperplane section: [0, 0, 796, 441, 124, 496] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -120 
+
+Trial: 10
+Hyperplane section: [0, 0, 442, 920, 340, 636] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 17
+Hyperplane section: [0, 0, 636, 784, 905, 837] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 21
+Hyperplane section: [0, 0, 342, 553, 61, 869] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, 1, 1, 1, 1], [1, 1, -1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 28
+Hyperplane section: [0, 0, 956, 150, 128, 148] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, 1, 1, 1, 1], [1, 1, -1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 30
+Hyperplane section: [0, 0, 178, 874, 118, 864] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, 1, 1, 1, 1], [1, 1, -1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 32
+Hyperplane section: [0, 0, 726, 601, 863, 412] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 33
+Hyperplane section: [0, 0, 986, 557, 720, 458] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 34
+Hyperplane section: [0, 0, 502, 546, 828, 225] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 35
+Hyperplane section: [0, 0, 574, 868, 800, 872] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, 1], [1, -1, 1, -1, 1, -1], [1, 1, -1, 1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 37
+Hyperplane section: [0, 0, 419, 46, 162, 518] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 38
+Hyperplane section: [0, 0, 622, 410, 538, 510] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, 1], [1, -1, 1, -1, 1, -1], [1, 1, -1, 1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 43
+Hyperplane section: [0, 0, 729, 911, 963, 738] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 44
+Hyperplane section: [0, 0, 673, 107, 411, 621] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 47
+Hyperplane section: [0, 0, 264, 324, 975, 144] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, 1], [1, -1, 1, -1, 1, -1], [1, 1, -1, 1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 48
+Hyperplane section: [0, 0, 417, 629, 478, 554] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 54
+Hyperplane section: [0, 0, 78, 720, 426, 592] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, 1, 1, -1, -1], [1, 1, -1, -1, 1, 1], [1, 1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 55
+Hyperplane section: [0, 0, 544, 804, 689, 130] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 58
+Hyperplane section: [0, 0, 458, 70, 616, 438] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -120 
+
+Trial: 59
+Hyperplane section: [0, 0, 933, 747, 350, 301] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 66
+Hyperplane section: [0, 0, 647, 382, 706, 219] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, 1, 1, 1, -1], [1, 1, -1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 76
+Hyperplane section: [0, 0, 626, 387, 123, 252] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 78
+Hyperplane section: [0, 0, 130, 231, 767, 880] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 80
+Hyperplane section: [0, 0, 90, 593, 420, 941] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, 1, 1, 1, -1], [1, 1, -1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 82
+Hyperplane section: [0, 0, 206, 287, 356, 796] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, 1, 1, 1, -1], [1, 1, -1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 84
+Hyperplane section: [0, 0, 133, 500, 568, 339] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 86
+Hyperplane section: [0, 0, 569, 356, 235, 171] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, 1], [1, -1, 1, -1, 1, -1], [1, 1, -1, 1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 87
+Hyperplane section: [0, 0, 636, 767, 382, 961] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -120 
+
+Trial: 91
+Hyperplane section: [0, 0, 481, 99, 204, 456] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 92
+Hyperplane section: [0, 0, 985, 453, 507, 619] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, 1], [1, -1, 1, -1, 1, -1], [1, 1, -1, 1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 95
+Hyperplane section: [0, 0, 218, 989, 197, 399] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 97
+Hyperplane section: [0, 0, 24, 191, 756, 626] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, 1, 1, -1, -1], [1, 1, -1, -1, 1, 1], [1, 1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 102
+Hyperplane section: [0, 0, 989, 62, 343, 720] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 104
+Hyperplane section: [0, 0, 132, 465, 157, 295] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 109
+Hyperplane section: [0, 0, 257, 66, 136, 268] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, 1], [1, -1, 1, -1, 1, -1], [1, 1, -1, 1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 110
+Hyperplane section: [0, 0, 634, 799, 228, 916] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 116
+Hyperplane section: [0, 0, 639, 815, 949, 130] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, 1, 1, -1, -1], [1, 1, -1, -1, 1, 1], [1, 1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -120 
+
+Trial: 118
+Hyperplane section: [0, 0, 186, 462, 440, 606] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 121
+Hyperplane section: [0, 0, 209, 234, 649, 633] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 124
+Hyperplane section: [0, 0, 675, 57, 420, 718] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, 1], [1, -1, 1, -1, 1, -1], [1, 1, -1, 1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 125
+Hyperplane section: [0, 0, 987, 666, 590, 286] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 129
+Hyperplane section: [0, 0, 233, 37, 749, 527] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 131
+Hyperplane section: [0, 0, 886, 808, 439, 175] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 132
+Hyperplane section: [0, 0, 649, 359, 383, 114] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, 1, 1, 1, 1], [1, 1, -1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 134
+Hyperplane section: [0, 0, 82, 49, 107, 738] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 136
+Hyperplane section: [0, 0, 184, 240, 161, 216] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, 1, 1, 1, -1], [1, 1, -1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 137
+Hyperplane section: [0, 0, 350, 119, 615, 697] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 142
+Hyperplane section: [0, 0, 566, 807, 761, 924] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 143
+Hyperplane section: [0, 0, 257, 645, 931, 768] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, 1, 1, 1, -1], [1, 1, -1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 144
+Hyperplane section: [0, 0, 3, 750, 888, 246] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -120 
+
+Trial: 146
+Hyperplane section: [0, 0, 638, 41, 448, 218] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 149
+Hyperplane section: [0, 0, 142, 783, 582, 184] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 150
+Hyperplane section: [0, 0, 374, 662, 995, 5] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, 1, 1, 1, 1], [1, 1, -1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 153
+Hyperplane section: [0, 0, 794, 496, 434, 915] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, 1, 1, 1, 1], [1, 1, -1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 166
+Hyperplane section: [0, 0, 252, 412, 806, 699] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, 1, 1, -1, -1], [1, 1, -1, -1, 1, 1], [1, 1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 170
+Hyperplane section: [0, 0, 466, 57, 830, 393] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 177
+Hyperplane section: [0, 0, 733, 282, 48, 750] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 178
+Hyperplane section: [0, 0, 815, 794, 542, 279] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, 1, 1, 1, -1], [1, 1, -1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 181
+Hyperplane section: [0, 0, 328, 351, 291, 83] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 182
+Hyperplane section: [0, 0, 511, 245, 986, 552] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 183
+Hyperplane section: [0, 0, 587, 33, 732, 194] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 184
+Hyperplane section: [0, 0, 645, 124, 931, 255] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -120 
+
+Trial: 186
+Hyperplane section: [0, 0, 464, 367, 622, 856] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, 1, 1, 1, 1], [1, 1, -1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 187
+Hyperplane section: [0, 0, 741, 409, 731, 443] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 188
+Hyperplane section: [0, 0, 55, 670, 232, 243] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 193
+Hyperplane section: [0, 0, 775, 282, 322, 493] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, 1, 1, 1, -1], [1, 1, -1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 198
+Hyperplane section: [0, 0, 501, 337, 519, 428] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 200
+Hyperplane section: [0, 0, 943, 342, 816, 783] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 202
+Hyperplane section: [0, 0, 231, 329, 687, 308] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 96 
+
+Trial: 205
+Hyperplane section: [0, 0, 576, 563, 871, 618] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, 1, 1, 1, -1], [1, 1, -1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 206
+Hyperplane section: [0, 0, 574, 842, 248, 610] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, 1, -1, 1, 1], [1, 1, -1, 1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 207
+Hyperplane section: [0, 0, 141, 518, 964, 135] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 208
+Hyperplane section: [0, 0, 558, 298, 516, 584] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, 1], [1, -1, 1, -1, -1, -1], [1, 1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 57 
+
+Trial: 211
+Hyperplane section: [0, 0, 705, 810, 361, 35] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+---
+===
+
+Preliminary results for Rand42Sing(997),
+with "Trial" requirement: len(Sing_signs) >= 1 and Test222(c) == False,
+and with "Print" requirement: E_c_ratio in RationalField() and abs(E_c_ratio)^2 >= q.
+
+(Total trials below: 208)
+
+---
+228
+Trial: 8
+Hyperplane section: [878, 993, 828, 358, 110, 348] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, 1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 64 
+
+Trial: 10
+Hyperplane section: [990, 512, 355, 472, 889, 889] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -35 
+
+Trial: 14
+Hyperplane section: [488, 519, 841, 773, 317, 24] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 42 
+
+Trial: 16
+Hyperplane section: [113, 835, 613, 448, 498, 498] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, 1, -1, -1], [1, -1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 18
+Hyperplane section: [111, 505, 461, 655, 85, 915] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, 1], [1, -1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 51 
+
+Trial: 19
+Hyperplane section: [47, 602, 152, 716, 771, 771] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 41 
+
+Trial: 24
+Hyperplane section: [846, 871, 924, 268, 564, 564] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 32 
+
+Trial: 25
+Hyperplane section: [169, 985, 431, 513, 733, 733] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 46 
+
+Trial: 31
+Hyperplane section: [500, 943, 919, 129, 868, 868] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 40 
+
+Trial: 37
+Hyperplane section: [875, 823, 404, 715, 521, 615] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, 1], [1, -1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 52 
+
+Trial: 38
+Hyperplane section: [201, 136, 105, 165, 866, 56] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, 1], [1, 1, -1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 82 
+
+Trial: 42
+Hyperplane section: [410, 835, 547, 175, 392, 525] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, 1, -1, -1], [1, -1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 32 
+
+Trial: 44
+Hyperplane section: [918, 918, 560, 52, 515, 31] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, -1], [1, 1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 50 
+
+Trial: 46
+Hyperplane section: [91, 463, 50, 753, 727, 727] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 46 
+
+Trial: 47
+Hyperplane section: [24, 598, 392, 746, 243, 660] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -44 
+
+Trial: 51
+Hyperplane section: [878, 621, 93, 640, 860, 226] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 60 
+
+Trial: 55
+Hyperplane section: [724, 406, 271, 197, 200, 980] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, 1], [1, 1, -1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 44 
+
+Trial: 58
+Hyperplane section: [526, 516, 925, 309, 609, 609] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, -1], [1, 1, -1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 42 
+
+Trial: 59
+Hyperplane section: [890, 683, 344, 137, 897, 897] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 34 
+
+Trial: 61
+Hyperplane section: [875, 49, 22, 427, 120, 120] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, 1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 38 
+
+Trial: 63
+Hyperplane section: [425, 606, 976, 406, 939, 939] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, 1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 46 
+
+Trial: 65
+Hyperplane section: [765, 435, 524, 243, 459, 459] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, -1], [1, 1, -1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -64 
+
+Trial: 66
+Hyperplane section: [661, 735, 540, 297, 95, 935] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, 1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 67 
+
+Trial: 70
+Hyperplane section: [491, 692, 807, 798, 446, 559] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 34 
+
+Trial: 73
+Hyperplane section: [738, 689, 0, 838, 832, 832] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, -1, 1, 1], [1, -1, 1, -1, -1, -1], [1, -1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 112 
+
+Trial: 76
+Hyperplane section: [524, 570, 672, 213, 355, 244] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 39 
+
+Trial: 77
+Hyperplane section: [804, 254, 434, 64, 648, 648] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, 1, -1, 1], [1, -1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 45 
+
+Trial: 78
+Hyperplane section: [101, 126, 436, 230, 796, 488] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, 1], [1, -1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -52 
+
+Trial: 80
+Hyperplane section: [536, 612, 833, 265, 556, 531] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, 1, -1, 1], [1, -1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 41 
+
+Trial: 85
+Hyperplane section: [668, 888, 296, 256, 316, 316] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -42 
+
+Trial: 92
+Hyperplane section: [839, 91, 516, 695, 676, 199] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, 1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 53 
+
+Trial: 94
+Hyperplane section: [409, 673, 878, 478, 102, 101] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 34 
+
+Trial: 95
+Hyperplane section: [428, 120, 203, 949, 901, 367] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 63 
+
+Trial: 99
+Hyperplane section: [410, 783, 46, 598, 436, 618] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 50 
+
+Trial: 103
+Hyperplane section: [658, 965, 927, 104, 831, 780] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, -1], [1, -1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 58 
+
+Trial: 105
+Hyperplane section: [701, 830, 58, 981, 125, 125] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 44 
+
+Trial: 109
+Hyperplane section: [914, 711, 618, 607, 371, 123] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 48 
+
+Trial: 113
+Hyperplane section: [319, 765, 109, 159, 619, 740] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, 1, -1, 1], [1, -1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -32 
+
+Trial: 120
+Hyperplane section: [402, 951, 275, 991, 77, 477] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 73 
+
+Trial: 122
+Hyperplane section: [745, 423, 756, 355, 110, 539] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, -1], [1, 1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 35 
+
+Trial: 124
+Hyperplane section: [871, 815, 92, 247, 172, 444] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 60 
+
+Trial: 126
+Hyperplane section: [300, 739, 190, 949, 645, 645] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 70 
+
+Trial: 129
+Hyperplane section: [872, 834, 822, 840, 320, 106] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 74 
+
+Trial: 136
+Hyperplane section: [625, 826, 59, 232, 299, 529] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, 1], [1, -1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 45 
+
+Trial: 141
+Hyperplane section: [810, 124, 820, 140, 217, 166] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 32 
+
+Trial: 142
+Hyperplane section: [80, 951, 374, 613, 24, 317] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, 1, -1, -1], [1, -1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 47 
+
+Trial: 143
+Hyperplane section: [593, 871, 378, 159, 245, 50] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -52 
+
+Trial: 144
+Hyperplane section: [592, 211, 752, 110, 949, 949] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 65 
+
+Trial: 154
+Hyperplane section: [556, 823, 826, 190, 747, 747] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 62 
+
+Trial: 157
+Hyperplane section: [385, 736, 61, 209, 772, 772] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, 1, -1, 1], [1, -1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 74 
+
+Trial: 161
+Hyperplane section: [692, 766, 556, 911, 364, 364] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, 1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 47 
+
+Trial: 164
+Hyperplane section: [468, 361, 193, 942, 266, 624] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 69 
+
+Trial: 165
+Hyperplane section: [294, 599, 851, 166, 790, 880] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, -1], [1, -1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 67 
+
+Trial: 168
+Hyperplane section: [903, 266, 767, 576, 927, 413] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 56 
+
+Trial: 173
+Hyperplane section: [288, 626, 617, 317, 846, 846] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 62 
+
+Trial: 174
+Hyperplane section: [204, 60, 886, 433, 744, 744] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, 1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 51 
+
+Trial: 175
+Hyperplane section: [776, 275, 395, 386, 834, 834] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 72 
+
+Trial: 177
+Hyperplane section: [815, 362, 890, 390, 414, 349] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, -1], [1, -1, 1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 58 
+
+Trial: 184
+Hyperplane section: [829, 987, 408, 741, 802, 652] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, 1], [1, -1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 36 
+
+Trial: 189
+Hyperplane section: [240, 62, 969, 935, 63, 725] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, -1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -42 
+
+Trial: 190
+Hyperplane section: [476, 94, 981, 177, 862, 298] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, 1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 48 
+
+Trial: 193
+Hyperplane section: [778, 550, 629, 264, 131, 941] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, 1, -1, 1], [1, -1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 37 
+
+Trial: 196
+Hyperplane section: [233, 894, 389, 627, 794, 794] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, -1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 32 
+
+Trial: 199
+Hyperplane section: [412, 608, 584, 470, 891, 677] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, 1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -85 
+
+Trial: 200
+Hyperplane section: [503, 557, 384, 273, 643, 60] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 72 
+
+Trial: 202
+Hyperplane section: [955, 264, 615, 734, 290, 424] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, 1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -66 
+
+Trial: 206
+Hyperplane section: [633, 685, 189, 514, 326, 326] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, 1, -1, 1], [1, -1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 38 
+
+Trial: 208
+Hyperplane section: [207, 905, 19, 530, 845, 498] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, 1, -1, -1], [1, 1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 51 
+
+---
+===
+
+Preliminary results for Rand33Sing(997),
+with "Trial" requirement: len(Sing_signs) >= 1 and Test222(c) == False,
+and with "Print" requirement: E_c_ratio in RationalField() and abs(E_c_ratio)^2 >= q.
+
+(Total trials below: 206)
+
+---
+Trial: 3
+Hyperplane section: [187, 762, 903, 682, 715, 828] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, -1], [1, 1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 45 
+
+Trial: 4
+Hyperplane section: [268, 692, 57, 957, 168, 715] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, -1, 1, -1, 1], [1, 1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -35 
+
+Trial: 12
+Hyperplane section: [770, 961, 575, 574, 433, 429] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 55 
+
+Trial: 14
+Hyperplane section: [290, 752, 626, 41, 280, 150] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 82 
+
+Trial: 15
+Hyperplane section: [807, 798, 156, 6, 2, 976] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 33 
+
+Trial: 16
+Hyperplane section: [617, 573, 460, 301, 352, 754] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 81 
+
+Trial: 17
+Hyperplane section: [230, 918, 660, 685, 285, 598] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 74 
+
+Trial: 18
+Hyperplane section: [628, 788, 214, 301, 231, 493] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, -1], [1, -1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 51 
+
+Trial: 20
+Hyperplane section: [605, 818, 840, 284, 149, 328] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 32 
+
+Trial: 21
+Hyperplane section: [738, 307, 908, 803, 667, 209] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, 1], [1, -1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 59 
+
+Trial: 23
+Hyperplane section: [903, 683, 1, 560, 770, 799] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 104 
+
+Trial: 37
+Hyperplane section: [77, 575, 291, 603, 590, 223] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, -1], [1, 1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 60 
+
+Trial: 38
+Hyperplane section: [129, 141, 952, 326, 961, 34] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 52 
+
+Trial: 40
+Hyperplane section: [96, 233, 571, 838, 417, 92] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, 1], [1, -1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 80 
+
+Trial: 41
+Hyperplane section: [0, 714, 573, 649, 649, 78] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, -1], [1, -1, 1, 1, -1, 1], [1, 1, -1, -1, 1, -1], [1, 1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 49 
+
+Trial: 47
+Hyperplane section: [471, 808, 902, 685, 758, 592] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, 1], [1, 1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 78 
+
+Trial: 50
+Hyperplane section: [291, 576, 192, 695, 882, 161] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -51 
+
+Trial: 54
+Hyperplane section: [772, 247, 933, 296, 589, 25] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 36 
+
+Trial: 56
+Hyperplane section: [258, 73, 0, 962, 826, 213] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, 1, 1, -1], [1, -1, 1, -1, -1, 1], [1, -1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -49 
+
+Trial: 57
+Hyperplane section: [568, 164, 854, 143, 439, 505] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, -1], [1, 1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -32 
+
+Trial: 58
+Hyperplane section: [718, 102, 778, 4, 824, 352] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, -1], [1, -1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 68 
+
+Trial: 59
+Hyperplane section: [539, 153, 937, 19, 305, 555] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 49 
+
+Trial: 61
+Hyperplane section: [902, 11, 383, 620, 927, 323] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 68 
+
+Trial: 62
+Hyperplane section: [762, 948, 79, 374, 814, 514] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 34 
+
+Trial: 64
+Hyperplane section: [611, 375, 827, 392, 759, 392] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, 1, 1], [1, 1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 138 
+
+Trial: 67
+Hyperplane section: [622, 622, 991, 295, 355, 425] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, 1], [1, 1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 32 
+
+Trial: 70
+Hyperplane section: [532, 179, 419, 4, 10, 586] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, -1], [1, 1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 41 
+
+Trial: 71
+Hyperplane section: [108, 905, 641, 72, 614, 380] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 64 
+
+Trial: 73
+Hyperplane section: [803, 559, 419, 575, 915, 761] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 35 
+
+Trial: 76
+Hyperplane section: [714, 298, 241, 0, 449, 641] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, -1, 1, -1], [1, 1, 1, 1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 69 
+
+Trial: 80
+Hyperplane section: [383, 755, 547, 745, 568, 952] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 60 
+
+Trial: 85
+Hyperplane section: [56, 801, 25, 934, 572, 355] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, 1, 1], [1, 1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 34 
+
+Trial: 89
+Hyperplane section: [0, 676, 122, 388, 742, 225] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, 1, 1, 1], [1, 1, 1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 113 
+
+Trial: 95
+Hyperplane section: [347, 722, 158, 658, 545, 342] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, 1], [1, -1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 42 
+
+Trial: 96
+Hyperplane section: [170, 163, 927, 253, 610, 865] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, -1], [1, 1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 79 
+
+Trial: 100
+Hyperplane section: [0, 950, 667, 606, 674, 913] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, 1], [1, -1, 1, 1, 1, -1], [1, 1, -1, -1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = -36 
+
+Trial: 102
+Hyperplane section: [326, 565, 718, 226, 192, 609] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, 1, 1], [1, 1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 55 
+
+Trial: 104
+Hyperplane section: [256, 90, 39, 600, 881, 879] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 53 
+
+Trial: 106
+Hyperplane section: [107, 85, 316, 483, 906, 656] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, -1], [1, -1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 38 
+
+Trial: 111
+Hyperplane section: [2, 620, 831, 909, 350, 895] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -85 
+
+Trial: 114
+Hyperplane section: [547, 353, 242, 7, 134, 702] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, 1, 1], [1, 1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 54 
+
+Trial: 115
+Hyperplane section: [920, 569, 687, 660, 743, 409] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 32 
+
+Trial: 117
+Hyperplane section: [447, 866, 743, 767, 895, 418] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 51 
+
+Trial: 118
+Hyperplane section: [429, 814, 28, 694, 77, 812] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 54 
+
+Trial: 120
+Hyperplane section: [709, 814, 84, 571, 800, 574] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 37 
+
+Trial: 121
+Hyperplane section: [133, 106, 864, 50, 574, 46] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 81 
+
+Trial: 122
+Hyperplane section: [743, 443, 432, 264, 880, 731] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, 1], [1, 1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 41 
+
+Trial: 123
+Hyperplane section: [937, 655, 508, 512, 426, 679] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 83 
+
+Trial: 125
+Hyperplane section: [302, 47, 492, 376, 258, 876] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, 1], [1, 1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 49 
+
+Trial: 127
+Hyperplane section: [266, 57, 315, 643, 616, 809] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, -1], [1, -1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -33 
+
+Trial: 129
+Hyperplane section: [414, 470, 405, 488, 366, 837] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -43 
+
+Trial: 134
+Hyperplane section: [559, 152, 819, 873, 373, 576] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, -1], [1, -1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 46 
+
+Trial: 136
+Hyperplane section: [545, 606, 709, 693, 422, 97] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, 1], [1, 1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -36 
+
+Trial: 138
+Hyperplane section: [462, 28, 534, 227, 0, 227] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, 1], [1, -1, 1, -1, 1, 1], [1, -1, 1, 1, -1, -1], [1, -1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 75 
+
+Trial: 142
+Hyperplane section: [823, 224, 382, 254, 208, 243] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 32 
+
+Trial: 144
+Hyperplane section: [891, 811, 345, 645, 660, 81] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 59 
+
+Trial: 145
+Hyperplane section: [167, 789, 569, 928, 352, 933] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, -1], [1, 1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 56 
+
+Trial: 146
+Hyperplane section: [421, 205, 838, 36, 190, 607] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 63 
+
+Trial: 148
+Hyperplane section: [44, 724, 724, 970, 888, 892] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -46 
+
+Trial: 149
+Hyperplane section: [654, 63, 17, 705, 860, 766] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, -1], [1, 1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 34 
+
+Trial: 151
+Hyperplane section: [796, 168, 857, 342, 317, 195] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, -1], [1, -1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 35 
+
+Trial: 153
+Hyperplane section: [326, 299, 579, 295, 844, 893] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 50 
+
+Trial: 155
+Hyperplane section: [692, 693, 404, 537, 960, 667] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 45 
+
+Trial: 156
+Hyperplane section: [981, 85, 773, 257, 635, 857] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -56 
+
+Trial: 158
+Hyperplane section: [408, 39, 102, 3, 300, 560] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, 1], [1, -1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 37 
+
+Trial: 161
+Hyperplane section: [4, 509, 35, 298, 138, 583] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -40 
+
+Trial: 162
+Hyperplane section: [661, 20, 285, 0, 548, 356] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, -1, 1, -1], [1, 1, 1, 1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 64 
+
+Trial: 163
+Hyperplane section: [198, 670, 603, 830, 360, 443] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, 1], [1, 1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 46 
+
+Trial: 165
+Hyperplane section: [253, 423, 38, 499, 37, 510] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 61 
+
+Trial: 166
+Hyperplane section: [320, 887, 179, 341, 11, 281] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 69 
+
+Trial: 170
+Hyperplane section: [501, 586, 501, 661, 271, 32] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 35 
+
+Trial: 171
+Hyperplane section: [11, 142, 937, 466, 579, 955] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, -1], [1, 1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 36 
+
+Trial: 172
+Hyperplane section: [458, 658, 374, 372, 23, 310] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 46 
+
+Trial: 177
+Hyperplane section: [996, 718, 324, 329, 310, 926] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, 1], [1, 1, 1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 42 
+
+Trial: 178
+Hyperplane section: [121, 892, 313, 40, 468, 55] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, 1], [1, -1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 99 
+
+Trial: 179
+Hyperplane section: [903, 938, 967, 959, 123, 179] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, -1], [1, -1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 40 
+
+Trial: 183
+Hyperplane section: [107, 266, 903, 123, 385, 558] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, 1], [1, 1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 37 
+
+Trial: 186
+Hyperplane section: [433, 851, 989, 217, 632, 7] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, 1, 1], [1, -1, -1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 68 
+
+Trial: 188
+Hyperplane section: [889, 93, 52, 288, 98, 118] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 43 
+
+Trial: 189
+Hyperplane section: [962, 48, 696, 673, 957, 678] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, 1, -1], [1, 1, -1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 59 
+
+Trial: 194
+Hyperplane section: [438, 141, 33, 638, 600, 387] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, 1, 1], [1, -1, 1, 1, -1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = -35 
+
+Trial: 195
+Hyperplane section: [114, 355, 503, 575, 311, 678] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, 1, -1], [1, 1, 1, 1, -1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 40 
+
+Trial: 197
+Hyperplane section: [465, 613, 885, 754, 466, 660] over Finite Field of size 997
+with Sing_signs: [[1, -1, 1, -1, -1, 1], [1, -1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 33 
+
+Trial: 198
+Hyperplane section: [131, 731, 805, 846, 778, 126] over Finite Field of size 997
+with Sing_signs: [[1, 1, 1, -1, -1, -1], [1, 1, 1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 44 
+
+Trial: 200
+Hyperplane section: [486, 28, 825, 559, 0, 446] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, -1, 1, 1], [1, -1, -1, 1, -1, -1], [1, -1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 43 
+
+Trial: 202
+Hyperplane section: [986, 835, 868, 598, 786, 132] over Finite Field of size 997
+with Sing_signs: [[1, -1, -1, -1, -1, 1], [1, -1, -1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 70 
+
+Trial: 205
+Hyperplane section: [595, 882, 461, 234, 616, 654] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, -1], [1, 1, -1, 1, 1, 1]]
+with CombinCodim(Sing_signs): 2
+with Test222(c) result: False
+with E_c(q)/q = 38 
+
+Trial: 206
+Hyperplane section: [517, 838, 0, 507, 962, 530] over Finite Field of size 997
+with Sing_signs: [[1, 1, -1, -1, -1, 1], [1, 1, -1, 1, 1, -1], [1, 1, 1, -1, -1, 1], [1, 1, 1, 1, 1, -1]]
+with CombinCodim(Sing_signs): 3
+with Test222(c) result: False
+with E_c(q)/q = 77 
+
+---
+===
