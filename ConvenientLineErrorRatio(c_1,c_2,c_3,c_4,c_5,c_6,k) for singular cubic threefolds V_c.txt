@@ -88,7 +88,8 @@ def ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k):
 #     https://ask.sagemath.org/question/32607/can-sage-extend-bases/
 #     print("ConvenientPts chosen =", ConvenientPts)
     for v in V.basis():
-#         print(ConvenientPts, span(ConvenientPts))
+#     print("ConvenientPts chosen =", ConvenientPts,
+#           "where", k_new.gen(), "has minpoly", k_new.gen().minimal_polynomial())
         if v not in span(ConvenientPts):
             ConvenientPts.append(v); ConvenientBasis.append(v)
     ConvenientBasis.extend([ConvenientPts[0], ConvenientPts[1]])
@@ -116,13 +117,13 @@ print("with (q_new, E_c(q_new)/q_new) =", E_c_ratio, '\n')
 yields
 
 Hyperplane section: [0, 0, 636, 767, 382, 961] over Finite Field of size 997
-ConvenientPts chosen = [(0, 0, 834, 130, 783), (1, 72, 781, 812, 588)]
+ConvenientPts chosen = [(0, 0, 834, 130, 783), (1, 734, 458, 346, 230)] where 1 has minpoly x + 996
 Transformation matrix T = [   1    0    0    0    1]
-[   0    1    0    0   72]
-[   0    0    1 -163 -216]
-[   0    0    0  130 -185]
-[   0    0    0 -214 -409]
-T*[x_1,...,x_5] = [x_1 + x_5, x_2 + 72*x_5, x_3 - 163*x_4 - 216*x_5, 130*x_4 - 185*x_5, -214*x_4 - 409*x_5]
-F_new = x_1^3 + x_2^3 + 13*x_3^3 + 115*x_3^2*x_4 + 3*x_1^2*x_5 + 216*x_2^2*x_5 + 378*x_3^2*x_5 + 414*x_3*x_4*x_5 + 3*x_1*x_5^2 - 400*x_2*x_5^2 - 281*x_3*x_5^2
-det(M) factors absolutely as ([(x_3, 2), (x_1^3 + x_2^3 - 167*x_1^2*x_3 - 60*x_2^2*x_3 - 9*x_1*x_3^2 + 203*x_2*x_3^2 - 246*x_3^3, 1)], 'defined over GF(-):', [(997, 1), (997, 1)])
+[   0    1    0    0 -263]
+[   0    0    1 -163  458]
+[   0    0    0  130  346]
+[   0    0    0 -214  230]
+T*[x_1,...,x_5] = [x_1 + x_5, x_2 - 263*x_5, x_3 - 163*x_4 + 458*x_5, 130*x_4 + 346*x_5, -214*x_4 + 230*x_5]
+F_new = x_1^3 + x_2^3 + 13*x_3^3 + 115*x_3^2*x_4 + 3*x_1^2*x_5 + 208*x_2^2*x_5 + 253*x_3^2*x_5 + 110*x_3*x_4*x_5 + 3*x_1*x_5^2 + 131*x_2*x_5^2 + 169*x_3*x_5^2
+det(M) factors absolutely as ([(x_3, 2), (x_1^3 + x_2^3 - 411*x_1^2*x_3 + 417*x_2^2*x_3 + 475*x_1*x_3^2 + 137*x_2*x_3^2 - 246*x_3^3, 1)], 'defined over GF(-):', [(997, 1, x + 996), (997, 1, x + 996)])
 with (q_new, E_c(q_new)/q_new) = (997, -120) 

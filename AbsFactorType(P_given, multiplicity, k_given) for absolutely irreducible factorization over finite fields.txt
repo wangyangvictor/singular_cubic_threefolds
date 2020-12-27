@@ -21,18 +21,33 @@ def AbsFactorType(P_given, multiplicity, k_given):
                 continue # if ext_deg < P_i.total_degree()
             abs_type_Q_i = AbsFactorType(Q_i, multiplicity*e_i, K)
             abs_type_list.extend(abs_type_Q_i[0])
-            ext_fields_list.extend(abs_type_Q_i[2])
-            break
+            ext_fields_list.append((k_given.order(), k_given.gen(), k_given.gen().minimal_polynomial()))
+#                     Could also include k_given.degree(), k_given (but these seem unnecessary).
+                    break
     return (abs_type_list, "defined over GF(-):", ext_fields_list)
 
-# for q in [2, 3, 5]:
-#     x, y = PolynomialRing(GF(q), 2, 'x,y').gens()
-#     print("With q =", q, ", x^4-y^4 factors absolutely as", AbsFactorType(x^4-y^4, 1, GF(q)))
+---
 
-# for q in [2, 3, 5]:
-#     x, y = PolynomialRing(GF(q), 2, 'x,y').gens()
-#     print("With q =", q, ", (x^2+1)^5*(x^4-x)^5 factors absolutely as", AbsFactorType((x^2+1)*(x^4-x), 5, GF(q)))
+for q in [2, 3, 5]:
+    x, y = PolynomialRing(GF(q), 2, 'x,y').gens()
+    print("With q =", q, ", x^4-y^4 factors absolutely as", AbsFactorType(x^4-y^4, 1, GF(q)))
 
-# for q in [2, 3, 5]:
-#     x, y, z = PolynomialRing(GF(q), 3, 'x,y,z').gens()
-#     print("With q =", q, ", x^3+2*y^3+4*z^3-6*x*y*z factors absolutely as", AbsFactorType(x^3+2*y^3+4*z^3-6*x*y*z, 1, GF(q)))
+for q in [2, 3, 5]:
+    x, y = PolynomialRing(GF(q), 2, 'x,y').gens()
+    print("With q =", q, ", (x^2+1)^5*(x^4-x)^5 factors absolutely as", AbsFactorType((x^2+1)*(x^4-x), 5, GF(q)))
+
+for q in [2, 3, 5]:
+    x, y, z = PolynomialRing(GF(q), 3, 'x,y,z').gens()
+    print("With q =", q, ", x^3+2*y^3+4*z^3-6*x*y*z factors absolutely as", AbsFactorType(x^3+2*y^3+4*z^3-6*x*y*z, 1, GF(q)))
+
+yields
+
+With q = 2 , x^4-y^4 factors absolutely as ([(x + y, 4)], 'defined over GF(-):', [(2, 1, x + 1)])
+With q = 3 , x^4-y^4 factors absolutely as ([(x + y, 1), (x - y, 1), ((z2 + 1)*x + y, 1), ((-z2 - 1)*x + y, 1)], 'defined over GF(-):', [(3, 1, x + 2), (3, 1, x + 2), (9, z2, x^2 + 2*x + 2), (9, z2, x^2 + 2*x + 2)])
+With q = 5 , x^4-y^4 factors absolutely as ([(x - 2*y, 1), (x - y, 1), (x + y, 1), (x + 2*y, 1)], 'defined over GF(-):', [(5, 1, x + 4), (5, 1, x + 4), (5, 1, x + 4), (5, 1, x + 4)])
+With q = 2 , (x^2+1)^5*(x^4-x)^5 factors absolutely as ([(x, 5), (x + 1, 15), (x + (z2), 5), (x + (z2 + 1), 5)], 'defined over GF(-):', [(2, 1, x + 1), (2, 1, x + 1), (4, z2, x^2 + x + 1), (4, z2, x^2 + x + 1)])
+With q = 3 , (x^2+1)^5*(x^4-x)^5 factors absolutely as ([(x, 5), (x - 1, 15), (x + (z2 + 1), 5), (x + (-z2 - 1), 5)], 'defined over GF(-):', [(3, 1, x + 2), (3, 1, x + 2), (9, z2, x^2 + 2*x + 2), (9, z2, x^2 + 2*x + 2)])
+With q = 5 , (x^2+1)^5*(x^4-x)^5 factors absolutely as ([(x, 5), (x + 2, 5), (x - 2, 5), (x - 1, 5), (x + (2*z2 + 2), 5), (x + (-2*z2 - 1), 5)], 'defined over GF(-):', [(5, 1, x + 4), (5, 1, x + 4), (5, 1, x + 4), (5, 1, x + 4), (25, z2, x^2 + 4*x + 2), (25, z2, x^2 + 4*x + 2)])
+With q = 2 , x^3+2*y^3+4*z^3-6*x*y*z factors absolutely as ([(x, 3)], 'defined over GF(-):', [(2, 1, x + 1)])
+With q = 3 , x^3+2*y^3+4*z^3-6*x*y*z factors absolutely as ([(-x + y - z, 3)], 'defined over GF(-):', [(3, 1, x + 2)])
+With q = 5 , x^3+2*y^3+4*z^3-6*x*y*z factors absolutely as ([(2*x + y - 2*z, 1), ((-2*z2 - 1)*x + (z2 + 1)*y + z, 1), ((2*z2 + 2)*x + (-z2 + 2)*y + z, 1)], 'defined over GF(-):', [(5, 1, x + 4), (25, z2, x^2 + 4*x + 2), (25, z2, x^2 + 4*x + 2)])
