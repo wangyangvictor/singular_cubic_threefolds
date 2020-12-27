@@ -1,9 +1,10 @@
 def Delta(c_1,c_2,c_3,c_4,c_5,c_6):
     return Integer(expand(3*prod(sqrt(c_1)^3 + i[0]*sqrt(c_2)^3 + i[1]*sqrt(c_3)^3 + i[2]*sqrt(c_4)^3 + i[3]*sqrt(c_5)^3 + i[4]*sqrt(c_6)^3 for i in cartesian_product([[-1,1],[-1,1],[-1,1],[-1,1],[-1,1]]))));
 
-# A SAGE generalization of https://github.com/alaface/CubLin
-# Input: the cubic threefold X (use homogeneous 5-variable cubic polynomial F below), an odd prime power q
-# Output: the number E_c(q)/q
+# Largely based on https://github.com/alaface/CubLin
+# Input: cubic threefold X = V_c/F_q (use homogeneous 5-variable cubic polynomial F below)
+# with q an odd prime power q.
+# Output: the number E_c(q)/q.
 
 def CleanLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
     k = GF(q,'a')
