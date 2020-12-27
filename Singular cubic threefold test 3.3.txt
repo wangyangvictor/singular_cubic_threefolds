@@ -650,7 +650,6 @@ and with "Print" requirement: E_c_ratio in RationalField() and abs(E_c_ratio)^2 
 (Total trials below: 208)
 
 ---
-228
 Trial: 8
 Hyperplane section: [878, 993, 828, 358, 110, 348] over Finite Field of size 997
 with Sing_signs: [[1, 1, 1, 1, -1, 1], [1, 1, 1, 1, 1, -1]]
