@@ -6,6 +6,8 @@ def Delta(c_1,c_2,c_3,c_4,c_5,c_6):
 # with q an odd prime power q.
 # Output: the number E_c(q)/q.
 
+# Load StdConicBundleErrorCount(F,q)
+
 def CleanLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
     k = GF(q,'a')
     R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5');

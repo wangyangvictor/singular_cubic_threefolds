@@ -5,6 +5,9 @@
 # with q *assumed* to be odd.
 # Output: the number E_X(q)/q.
 
+# Optional: Load AbsFactorType(P_given, multiplicity, k_given)
+# (if interested in det(M) factorization).
+
 def StdConicBundleErrorCount(F_std,q_size):
     q = q_size
     k = GF(q,'a')
@@ -67,7 +70,7 @@ def StdConicBundleErrorCount(F_std,q_size):
     delta_3 = f*l_1 - q_1^2;
     det = f*delta_1 - q_1*(q_1*l_3 - l_2*q_2) + q_2*(q_1*l_2 - l_1*q_2);
     S = PolynomialRing(k, 3, 'x_1,x_2,x_3');
-    det = S(det);
+    det = S(det); # print("det(M) factors absolutely as", AbsFactorType(det, 1, k))
     C = Curve(det);
     lis = [P for P in C.rational_points()
            if (delta_1)(P[0],P[1],P[2],0,0) != 0
