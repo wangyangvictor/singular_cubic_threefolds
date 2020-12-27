@@ -1,0 +1,120 @@
+# Based in part on https://github.com/alaface/CubLin
+# However, we allow singular X, and
+# we will specifically use a line L through as many singularities of X as possible.
+# Input: a singular projective cubic threefold X = V_c/F_q
+# with q an odd prime power q.
+# Output: a power q_new of q, and the number E_c(q_new)/q_new,
+# as well as "printed" information that may rigorously prove that X is "good".
+
+# Load AbsFactorType(P_given, multiplicity, k_given)
+
+# Load StdConicBundleErrorCount(F_std, k_given)
+
+---
+
+# R = PolynomialRing(QQ, 5, 'x_1,x_2,x_3,x_4,x_5')
+# x_1, x_2, x_3, x_4, x_5 = R.gens();
+# F = x_1^3+x_2^3+x_3^3+x_4^3+x_5^3
+# v = vector(QQ, [1,1,1,1,1])
+# print(v)
+# print(F([1,1,1,1,1]))
+# print(F.gradient()[0]([1,1,1,1,1]))
+# print(F(x_1+x_2,x_1,x_3,x_4,x_5))
+
+# k = GF(11)
+# R_5 = PolynomialRing(k, 'x_5'); x_5 = R_5.gen()
+# R = PolynomialRing(R_5, 4, 'x_1,x_2,x_3,x_4'); x_1, x_2, x_3, x_4 = R.gens()
+# F = x_5^3; print(parent(F))
+# R_sym = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5'); print(R_sym.gens())
+# x_1, x_2, x_3, x_4, x_5 = R_sym.gens()
+# R_sym(F*x_1^3)
+# # print(R.gens())
+# # R(F*x_1^3)
+# R_small = R_sym.remove_var(x_1,x_2,x_3,x_4); print(R_sym, R_small)
+
+def ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k):
+    q = k.order()
+#     R_5 = PolynomialRing(k, 'x_5'); x_5 = R_5.gen()
+#     R = PolynomialRing(R_5, 4, 'x_1,x_2,x_3,x_4'); x_1, x_2, x_3, x_4 = R.gens()
+    R_sym = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5'); # print(R_sym)
+    x_1, x_2, x_3, x_4, x_5 = R_sym.gens()
+    R_small = R_sym.remove_var(x_1,x_2,x_3,x_4); # print(R_small)
+#     https://doc.sagemath.org/html/en/reference/polynomial_rings/sage/rings/polynomial/multi_polynomial_ring_base.html
+    c = [R_sym(c_1/c_6), R_sym(c_2/c_6), R_sym(c_3/c_6), R_sym(c_4/c_6), R_sym(c_5/c_6), R_sym(c_6/c_6)]
+#     Implicitly we assume c_6 != 0.
+    x_6 = -(c[0]*x_1 + c[1]*x_2 + c[2]*x_3 + c[3]*x_4 + c[4]*x_5)
+    F = x_1^3+x_2^3+x_3^3+x_4^3+x_5^3+x_6^3; # print(parent(F))
+
+    K = k.extension(2); s = []; Sings = []
+    if all(c[i].is_square() for i in range(len(c))):
+        k_new = k
+    else:
+        k_new = K
+    q_new = k_new.order()
+    for i in range(6):
+        s.append(k_new(c[i]).sqrt())
+    for j in cartesian_product([[-1,1],[-1,1],[-1,1],[-1,1],[-1,1],[1]]):
+        if not(all(j[i] == 1 or s[i] != 0 for i in range(5))):
+            continue # This ensures we don't double count from c_i=0's.
+        if sum(j[i]*s[i]^3 for i in range(6)) == k_new(0):
+            Sings.append([j[i]*s[i] for i in range(5)])
+
+    ConvenientPts = []; V = VectorSpace(k_new, 5); ConvenientBasis = []
+#     https://doc.sagemath.org/html/en/constructions/linear_algebra.html
+    if len(Sings) == 0:
+        return "#Sings = 0; abort. Use CleanLine instead."
+    if len(Sings) >= 2:
+        ConvenientPts.extend([V(Sings[0]), V(Sings[1])])
+    if len(Sings) == 1:
+        u = Sings[0]
+        for tries in range(10*q_new):
+            t = [1, k_new.random_element(), k_new.random_element(), k_new.random_element(), x_5]
+#             We are not using the t[0] = 0 locus, but this shouldn't matter...
+            univar = R_small(F(list(t))); L = univar.roots()
+            if len(L) == 0:
+                continue
+#             t_5 = L[0][0]
+            t[4] = L[0][0]
+            if all(t[i[0]]*u[i[1]] == t[i[1]]*u[i[0]] for i in cartesian_product([range(5), range(5)])):
+                continue
+#             if (sum(u[i]*F.gradient()[i](list(t))(t_5) for i in range(4))
+#                 + u[4]*univar.derivative()(t_5)) == 0:
+#                 t.append(t_5)
+            if sum(u[i]*F.gradient()[i](list(t)) for i in range(5)) == 0:
+                ConvenientPts.extend([V(u), V(t)])
+                break
+        if len(ConvenientPts) < 2:
+            return "#Sings = 1; algorithm did not find a convenient line over k_new; abort."
+#     https://ask.sagemath.org/question/32607/can-sage-extend-bases/
+    for v in V.basis():
+#         print(ConvenientPts, span(ConvenientPts))
+        if v not in span(ConvenientPts):
+            ConvenientPts.append(v); ConvenientBasis.append(v)
+    ConvenientBasis.extend([ConvenientPts[0], ConvenientPts[1]])
+    M = matrix(R_sym, ConvenientBasis).transpose(); v = vector(R_sym, [x_1, x_2, x_3, x_4, x_5])
+#     print("hello"); print(M,v)
+#     print("hello"); print([(M*v)[i] for i in range(5)])
+    F_new = F([(M*v)[i] for i in range(5)])
+#     print("F_new =", F_new)
+
+    E_c = StdConicBundleErrorCount(F_new, k_new)
+    if (E_c in IntegerRing()):
+        return (q_new, E_c/q_new);
+    else:
+        return (q_new, E_c);
+
+---
+
+q = 997;
+k = GF(q, 'a')
+c = [0, 0, 636, 767, 382, 961]
+print("Hyperplane section:", c, "over", k)
+E_c_ratio = ConvenientLineErrorRatio(c[0],c[1],c[2],c[3],c[4],c[5],k)
+print("with (q_new, E_c(q_new)/q_new) =", E_c_ratio, '\n')
+
+yields
+
+Hyperplane section: [0, 0, 636, 767, 382, 961] over Finite Field of size 997
+F_new = x_1^3 + x_2^3 + 13*x_3^3 + 115*x_3^2*x_4 + 3*x_1^2*x_5 - 437*x_2^2*x_5 - 401*x_3^2*x_5 + 330*x_3*x_4*x_5 + 3*x_1*x_5^2 - 484*x_2*x_5^2 + 273*x_3*x_5^2
+det(M) factors absolutely as ([(x_3, 2), (x_1^3 + x_2^3 - 137*x_1^2*x_3 - 316*x_2^2*x_3 - 58*x_1*x_3^2 + 52*x_2*x_3^2 - 246*x_3^3, 1)], 'defined over GF(-):', [(997, 1), (997, 1)])
+with (q_new, E_c(q_new)/q_new) = (997, -120) 

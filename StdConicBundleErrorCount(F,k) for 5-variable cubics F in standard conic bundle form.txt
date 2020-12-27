@@ -8,9 +8,8 @@
 # Optional: Load AbsFactorType(P_given, multiplicity, k_given)
 # (if interested in det(M) factorization).
 
-def StdConicBundleErrorCount(F_std,q_size):
-    q = q_size
-    k = GF(q,'a')
+def StdConicBundleErrorCount(F_std, k_given):
+    k = k_given; q = k.order()
     R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5');
 #     Even though
 #     print(F_std)
@@ -83,3 +82,19 @@ def StdConicBundleErrorCount(F_std,q_size):
 
     E_X = -q*q*len(Sing_L_k) + q*(2*len(real_lis) - len(lis));
     return E_X;
+
+# ---
+
+# R_0 = PolynomialRing(IntegerRing(), 3, 'x_1,x_2,x_3')
+# x_1,x_2,x_3 = R_0.gens()
+# R = PolynomialRing(R_0, 2, 'x_4,x_5')
+# x_4,x_5 = R.gens()
+# StdConicBundleErrorCount((2*x_1^3 + x_1*x_2*x_3 + 2*x_2^3 + x_3^3) + 2*(x_1^2+x_2*x_3)*x_4 + 2*(x_2^2+x_1*x_3)*x_5 + 2*x_3*x_4*x_5, GF(101))
+# StdConicBundleErrorCount(-x_1^2*x_2 - 2*x_2^3 - 2*x_1^2*x_3 + x_1*x_2*x_3 - x_2^2*x_3 - x_1*x_3^2 - 2*x_2*x_3^2 + 2*x_2^2*x_4 - x_1*x_3*x_4 - 2*x_2*x_3*x_4 - 2*x_3^2*x_4 + x_1*x_4^2 + x_3*x_4^2 + x_1^2*x_5 + x_1*x_2*x_5 + 2*x_1*x_3*x_5 + x_3^2*x_5 - 2*x_1*x_4*x_5 + x_2*x_4*x_5 - 2*x_3*x_4*x_5 + x_1*x_5^2 - x_2*x_5^2 + x_3*x_5^2, GF(101))
+
+# yields
+
+# det(M) factors absolutely as ([(x_3, 1), (x_1*x_2 + x_3^2, 1), (x_1*x_2 + 50*x_3^2, 1)], 'defined over GF(-):', [(101, 1), (101, 1), (101, 1)])
+# 10100
+# det(M) factors absolutely as ([(-17*x_1^5 - 34*x_1^4*x_2 + 16*x_1^3*x_2^2 - 17*x_1^2*x_2^3 - 34*x_1*x_2^4 + x_2^5 + 50*x_1^4*x_3 - 17*x_1^3*x_2*x_3 - # x_1^2*x_2^2*x_3 + 17*x_1*x_2^3*x_3 + 15*x_2^4*x_3 - 17*x_1^3*x_3^2 - 16*x_1^2*x_2*x_3^2 - 17*x_1*x_2^2*x_3^2 + 35*x_2^3*x_3^2 - 50*x_1^2*x_3^3 + 17*x_1*x_2*x_3^3 + x_2^2*x_3^3 + 17*x_1*x_3^4 - 34*x_2*x_3^4 - 17*x_3^5, 1)], 'defined over GF(-):', [(101, 1)])
+# 0
