@@ -16,14 +16,14 @@ def AbsFactorType(P_given, multiplicity, k_given):
             if len(list(Q_i.factor())) == 1:
                 if ext_deg == P_i.total_degree():
                     abs_type_list.append((P_i, multiplicity*e_i))
-                    ext_fields_list.append((k_given.order(), k_given.gen())) # k_given.degree(), k_given
+                    ext_fields_list.append((k_given.order(), k_given.gen(), k_given.gen().minimal_polynomial()))
+#                     Could also include k_given.degree(), k_given (but these seem unnecessary).
                     break
                 continue # if ext_deg < P_i.total_degree()
             abs_type_Q_i = AbsFactorType(Q_i, multiplicity*e_i, K)
             abs_type_list.extend(abs_type_Q_i[0])
-            ext_fields_list.append((k_given.order(), k_given.gen(), k_given.gen().minimal_polynomial()))
-#                     Could also include k_given.degree(), k_given (but these seem unnecessary).
-                    break
+            ext_fields_list.extend(abs_type_Q_i[2])
+            break
     return (abs_type_list, "defined over GF(-):", ext_fields_list)
 
 ---
