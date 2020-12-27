@@ -1,0 +1,38 @@
+# https://doc.sagemath.org/html/en/constructions/polynomials.html
+# https://doc.sagemath.org/html/en/reference/structure/sage/structure/factorization.html
+# https://doc.sagemath.org/html/en/reference/schemes/sage/schemes/generic/algebraic_scheme.html
+def AbsFactorType(P_given, multiplicity, k_given):
+    if P_given == 0:
+        return "P_given (= 0) cannot be factored; abort."
+    initial_list = list(P_given.factor())
+    abs_type_list = []; ext_fields_list = []
+    for i in range(len(initial_list)):
+        P_i = initial_list[i][0]; e_i = initial_list[i][1]
+        for ext_deg in range(1, P_i.total_degree()+1):
+            K = k_given.extension(ext_deg)
+            Q_i = P_i.change_ring(K)
+#             https://ask.sagemath.org/question/50978/how-to-base-change-from-a-polynomialring-to-that-ring-with-one-variable-evaluated-ie-from-qxy-to-qxyx0-qy/
+#             https://doc.sagemath.org/html/en/reference/polynomial_rings/sage/rings/polynomial/multi_polynomial.html
+            if len(list(Q_i.factor())) == 1:
+                if ext_deg == P_i.total_degree():
+                    abs_type_list.append((P_i, multiplicity*e_i))
+                    ext_fields_list.append((k_given.order(), k_given.gen())) # k_given.degree(), k_given
+                    break
+                continue # if ext_deg < P_i.total_degree()
+            abs_type_Q_i = AbsFactorType(Q_i, multiplicity*e_i, K)
+            abs_type_list.extend(abs_type_Q_i[0])
+            ext_fields_list.extend(abs_type_Q_i[2])
+            break
+    return (abs_type_list, "defined over GF(-):", ext_fields_list)
+
+# for q in [2, 3, 5]:
+#     x, y = PolynomialRing(GF(q), 2, 'x,y').gens()
+#     print("With q =", q, ", x^4-y^4 factors absolutely as", AbsFactorType(x^4-y^4, 1, GF(q)))
+
+# for q in [2, 3, 5]:
+#     x, y = PolynomialRing(GF(q), 2, 'x,y').gens()
+#     print("With q =", q, ", (x^2+1)^5*(x^4-x)^5 factors absolutely as", AbsFactorType((x^2+1)*(x^4-x), 5, GF(q)))
+
+# for q in [2, 3, 5]:
+#     x, y, z = PolynomialRing(GF(q), 3, 'x,y,z').gens()
+#     print("With q =", q, ", x^3+2*y^3+4*z^3-6*x*y*z factors absolutely as", AbsFactorType(x^3+2*y^3+4*z^3-6*x*y*z, 1, GF(q)))
