@@ -2,6 +2,7 @@ def Delta(c_1,c_2,c_3,c_4,c_5,c_6):
     return Integer(expand(3*prod(sqrt(c_1)^3 + i[0]*sqrt(c_2)^3 + i[1]*sqrt(c_3)^3 + i[2]*sqrt(c_4)^3 + i[3]*sqrt(c_5)^3 + i[4]*sqrt(c_6)^3 for i in cartesian_product([[-1,1],[-1,1],[-1,1],[-1,1],[-1,1]]))));
 
 # Largely based on https://github.com/alaface/CubLin
+# But we will use a specific line L coming from a 2-plane on V(x_1^3+...+x_6^3).
 # Input: cubic threefold X = V_c/F_q (use homogeneous 5-variable cubic polynomial F below)
 # with q an odd prime power q.
 # Output: the number E_c(q)/q.
