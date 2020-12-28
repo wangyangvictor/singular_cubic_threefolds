@@ -34,17 +34,8 @@
 
 def ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k):
     q = k.order()
-#     R_5 = PolynomialRing(k, 'x_5'); x_5 = R_5.gen()
-#     R = PolynomialRing(R_5, 4, 'x_1,x_2,x_3,x_4'); x_1, x_2, x_3, x_4 = R.gens()
-    R_sym = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5'); # print(R_sym)
-    x_1, x_2, x_3, x_4, x_5 = R_sym.gens()
-    R_small = R_sym.remove_var(x_1,x_2,x_3,x_4); # print(R_small)
-#     https://doc.sagemath.org/html/en/reference/polynomial_rings/sage/rings/polynomial/multi_polynomial_ring_base.html
-    c = [R_sym(c_1/c_6), R_sym(c_2/c_6), R_sym(c_3/c_6), R_sym(c_4/c_6), R_sym(c_5/c_6), R_sym(c_6/c_6)]
-#     Implicitly we assume c_6 != 0.
-    x_6 = -(c[0]*x_1 + c[1]*x_2 + c[2]*x_3 + c[3]*x_4 + c[4]*x_5)
-    F = x_1^3+x_2^3+x_3^3+x_4^3+x_5^3+x_6^3; # print(parent(F))
-
+    c = [k(c_1/c_6), k(c_2/c_6), k(c_3/c_6), k(c_4/c_6), k(c_5/c_6), k(c_6/c_6)]
+#     Implicitly we assume c_6 != 0, and then renormalize c_6 to c[5] = 1.
     K = k.extension(2); s = []; Sings = []
     if all(c[i].is_square() for i in range(len(c))):
         k_new = k
@@ -58,6 +49,13 @@ def ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k):
             continue # This ensures we don't double count from c_i=0's.
         if sum(j[i]*s[i]^3 for i in range(6)) == k_new(0):
             Sings.append([j[i]*s[i] for i in range(5)])
+
+    R_sym = PolynomialRing(k_new, 5, 'x_1,x_2,x_3,x_4,x_5'); # print(R_sym)
+    x_1, x_2, x_3, x_4, x_5 = R_sym.gens()
+    R_small = R_sym.remove_var(x_1,x_2,x_3,x_4); # print(R_small)
+#     https://doc.sagemath.org/html/en/reference/polynomial_rings/sage/rings/polynomial/multi_polynomial_ring_base.html
+    x_6 = -(c[0]*x_1 + c[1]*x_2 + c[2]*x_3 + c[3]*x_4 + c[4]*x_5)
+    F = x_1^3+x_2^3+x_3^3+x_4^3+x_5^3+x_6^3; # print(parent(F))
 
     ConvenientPts = []; V = VectorSpace(k_new, 5); ConvenientBasis = []
 #     https://doc.sagemath.org/html/en/constructions/linear_algebra.html
@@ -73,37 +71,32 @@ def ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k):
             univar = R_small(F(list(t))); L = univar.roots()
             if len(L) == 0:
                 continue
-#             t_5 = L[0][0]
             t[4] = L[0][0]
             if all(t[i[0]]*u[i[1]] == t[i[1]]*u[i[0]] for i in cartesian_product([range(5), range(5)])):
                 continue
-#             if (sum(u[i]*F.gradient()[i](list(t))(t_5) for i in range(4))
-#                 + u[4]*univar.derivative()(t_5)) == 0:
-#                 t.append(t_5)
             if sum(u[i]*F.gradient()[i](list(t)) for i in range(5)) == 0:
                 ConvenientPts.extend([V(u), V(t)])
                 break
         if len(ConvenientPts) < 2:
             return "#Sings = 1; algorithm did not find a convenient line over k_new; abort."
 #     https://ask.sagemath.org/question/32607/can-sage-extend-bases/
-#     print("ConvenientPts chosen =", ConvenientPts)
+    print("ConvenientPts chosen =", ConvenientPts,
+          "where", k_new.gen(), "has minpoly", k_new.gen().minimal_polynomial())
     for v in V.basis():
-#     print("ConvenientPts chosen =", ConvenientPts,
-#           "where", k_new.gen(), "has minpoly", k_new.gen().minimal_polynomial())
         if v not in span(ConvenientPts):
             ConvenientPts.append(v); ConvenientBasis.append(v)
     ConvenientBasis.extend([ConvenientPts[0], ConvenientPts[1]])
     T = matrix(R_sym, ConvenientBasis).transpose(); v = vector(R_sym, [x_1, x_2, x_3, x_4, x_5])
-#     print("Transformation matrix T =", T)
-#     print("T*[x_1,...,x_5] =", [(T*v)[i] for i in range(5)])
+    print("Transformation matrix T =", T)
+    print("T*[x_1,...,x_5] =", [(T*v)[i] for i in range(5)])
     F_new = F([(T*v)[i] for i in range(5)])
-#     print("F_new =", F_new)
+    print("F_new =", F_new)
 
     E_c = StdConicBundleErrorCount(F_new, k_new)
     if (E_c in IntegerRing()):
-        return (q_new, E_c/q_new);
+        return (q_new, E_c/q_new)
     else:
-        return (q_new, E_c);
+        return (q_new, E_c)
 
 ---
 
