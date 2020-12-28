@@ -10,7 +10,7 @@
 
 def StdConicBundleErrorCount(F_std, k_given):
     k = k_given; q = k.order()
-    R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5');
+    R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5')
 #     Even though
 #     print(F_std)
 #     makes sense, we still need to "internally" specify the local/mutable variables x_i:
@@ -19,41 +19,33 @@ def StdConicBundleErrorCount(F_std, k_given):
 #     Next, we replace F_std with its "SAGE coercion" in R (if possible; otherwise an error will arise).
     F_std = R(F_std);
     if not(F_std.is_homogeneous() and F_std.total_degree() == 3):
-        return("F_std is non-homogeneous or non-cubic; abort.")
-#     print("F_std(0,0,0,x_4,x_5) =", F_std(0,0,0,x_4,x_5));
+        return "F_std is non-homogeneous or non-cubic; abort."
+#     print("F_std(0,0,0,x_4,x_5) =", F_std(0,0,0,x_4,x_5))
     if (F_std(0,0,0,x_4,x_5) != 0):
-        return("F_std does not vanish on V(x_1,x_2,x_3); abort.")
+        return "F_std does not vanish on V(x_1,x_2,x_3); abort."
 
-    f = F_std.coefficient({x_4:0, x_5:0});
-    q_1 = F_std.coefficient({x_4:1, x_5:0}) / 2;
-    q_2 = F_std.coefficient({x_4:0, x_5:1}) / 2;
-    l_1 = F_std.coefficient({x_4:2, x_5:0});
-    l_2 = F_std.coefficient({x_4:1, x_5:1}) / 2;
-    l_3 = F_std.coefficient({x_4:0, x_5:2});
+    f = F_std.coefficient({x_4:0, x_5:0})
+    q_1 = F_std.coefficient({x_4:1, x_5:0}) / 2
+    q_2 = F_std.coefficient({x_4:0, x_5:1}) / 2
+    l_1 = F_std.coefficient({x_4:2, x_5:0})
+    l_2 = F_std.coefficient({x_4:1, x_5:1}) / 2
+    l_3 = F_std.coefficient({x_4:0, x_5:2})
 
-    J = R.ideal([f,q_1,q_2,l_1,l_2,l_3]);
-#     P.<x_1, x_2, x_3, x_4, x_5> = ProjectiveSpace(4, k)
-#     return P.subscheme(J);
+    J = R.ideal([f,q_1,q_2,l_1,l_2,l_3])
     if J.dimension() >= 3:
-        return "X contains a possibly relevant geometric plane; abort.";
+        return "X contains a possibly relevant geometric plane; abort."
 #     https://ask.sagemath.org/question/42591/how-to-compute-common-zeros-of-system-of-polynomial-equations-with-dimension-2/
 
-    P.<x_1, x_2, x_3, x_4, x_5> = ProjectiveSpace(4, k);
-    I = R.ideal(F_std);
-#     print(I)
-    X = P.subscheme(I);
-    I_sing = X.Jacobian();
-#     print(I_sing)
-    I_sing_L = R.ideal(I_sing+[x_1,x_2,x_3]);
-#     print(I_sing_L)
-    Sing_L = P.subscheme(I_sing_L);
-
-# #     We now enumerate Sing_L(k). The following suggestion from
-# #     https://doc.sagemath.org/html/en/reference/schemes/sage/schemes/projective/projective_rational_point.html
-# #     is too slow:
-#     from sage.schemes.projective.projective_rational_point import enum_projective_finite_field
-#     Sing_L_k = enum_projective_finite_field(Sing_L);
-
+    P.<x_1, x_2, x_3, x_4, x_5> = ProjectiveSpace(4, k)
+    I = R.ideal(F_std); X = P.subscheme(I)
+    I_sing = X.Jacobian() # print(I_sing)
+    I_sing_L = R.ideal(I_sing+[x_1,x_2,x_3]) # print(I_sing_L)
+    Sing_L = P.subscheme(I_sing_L)
+#     We now enumerate Sing_L(k). The following suggestion from
+#     https://doc.sagemath.org/html/en/reference/schemes/sage/schemes/projective/projective_rational_point.html
+#     is too slow:
+# #     from sage.schemes.projective.projective_rational_point import enum_projective_finite_field
+# #     Sing_L_k = enum_projective_finite_field(Sing_L);
 #     Instead, we will do a for loop over L, testing membership using
 #     https://ask.sagemath.org/question/47938/check-whether-point-is-on-a-projective-variety/
     Sing_L_k = []
@@ -64,24 +56,24 @@ def StdConicBundleErrorCount(F_std, k_given):
             Sing_L_k.append(P.point([0,0,0,t_4,1]))
 #     print("Sing_L_k =", Sing_L_k)
 
-    delta_1 = l_1*l_3 - l_2^2;
-    delta_2 = f*l_3 - q_2^2;
-    delta_3 = f*l_1 - q_1^2;
-    det = f*delta_1 - q_1*(q_1*l_3 - l_2*q_2) + q_2*(q_1*l_2 - l_1*q_2);
-    S = PolynomialRing(k, 3, 'x_1,x_2,x_3');
-    det = S(det); # print("det(M) factors absolutely as", AbsFactorType(det, 1, k))
-    C = Curve(det);
+    delta_1 = l_1*l_3 - l_2^2
+    delta_2 = f*l_3 - q_2^2
+    delta_3 = f*l_1 - q_1^2
+    det = f*delta_1 - q_1*(q_1*l_3 - l_2*q_2) + q_2*(q_1*l_2 - l_1*q_2)
+    S = PolynomialRing(k, 3, 'x_1,x_2,x_3')
+    det = S(det); print("det(M) factors absolutely as", AbsFactorType(det, 1, k))
+    C = Curve(det)
     lis = [P for P in C.rational_points()
            if (delta_1)(P[0],P[1],P[2],0,0) != 0
            or (delta_2)(P[0],P[1],P[2],0,0) != 0
-           or (delta_3)(P[0],P[1],P[2],0,0) != 0];
+           or (delta_3)(P[0],P[1],P[2],0,0) != 0]
     real_lis = [P for P in lis
                 if k((-delta_1)(P[0],P[1],P[2],0,0)).is_square()
                 and k((-delta_2)(P[0],P[1],P[2],0,0)).is_square()
-                and k((-delta_3)(P[0],P[1],P[2],0,0)).is_square()];
+                and k((-delta_3)(P[0],P[1],P[2],0,0)).is_square()]
 
-    E_X = -q*q*len(Sing_L_k) + q*(2*len(real_lis) - len(lis));
-    return E_X;
+    E_X = -q*q*len(Sing_L_k) + q*(2*len(real_lis) - len(lis))
+    return E_X
 
 # ---
 
