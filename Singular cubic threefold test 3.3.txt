@@ -17,7 +17,7 @@ def CombinSpan(sign_vects):
             sign_vects.append(list(i))
     return sign_vects
 
-def Sings(c,k_given):
+def SingSigns(c,k_given):
     K = k_given.extension(2)
 #     print(k_given, K)
     s = []
@@ -101,7 +101,7 @@ while 1:
 #         c = Rand33Sing(k)
         if c[5] == 0 or c[0] == c[5]:
             continue;
-        Sing_signs = Sings(c,k)
+        Sing_signs = SingSigns(c,k)
         if len(Sing_signs) >= 1 and Test222(c) == False:
             E_c_ratio = CleanLineErrorRatio(c[0],c[1],c[2],c[3],c[4],c[5],q)
             trials += 1
