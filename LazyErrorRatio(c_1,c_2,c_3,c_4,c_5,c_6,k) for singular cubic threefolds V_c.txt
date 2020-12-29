@@ -2,9 +2,8 @@
 # with F defined over a finite field k = GF(q,'a').
 # Output: the number E_X(q)/q, where X := V(F).
 
-def LazyErrorCount(F,q_size):
-    q = q_size
-    k = GF(q,'a')
+def LazyErrorCount(F,k):
+    q_size = k.order()
     R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5');
 #     Even though
 #     print(F)
@@ -25,8 +24,8 @@ def LazyErrorCount(F,q_size):
 # Input: the cubic threefold X (use homogeneous 5-variable cubic polynomial F below), an odd prime power q
 # Output: the number E_c(q)/q
 
-def LazyErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
-    k = GF(q,'a')
+def LazyErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k):
+    q = k.order()
     R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5')
     x_1, x_2, x_3, x_4, x_5 = R.gens()
     S = PolynomialRing(R, 1, 'x_6')
@@ -36,7 +35,7 @@ def LazyErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
     if c_6 != 0:
         F_gen = (c_6^3*(x_1^3 + x_2^3 + x_3^3 + x_4^3 + x_5^3)
                   - (c_1*x_1 + c_2*x_2 + c_3*x_3 + c_4*x_4 + c_5*x_5)^3);
-        E_c = LazyErrorCount(F_gen,q);
+        E_c = LazyErrorCount(F_gen,k);
         return E_c/q
 
 #     In general, we will count points the laziest way possible.
