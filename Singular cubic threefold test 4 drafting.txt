@@ -1,0 +1,20 @@
+Try using convenientline when there are singularities
+(this is definitely doable if there are >= 2 singularities)
+(if there's only 1, say s, so that F_c(s) = 0 and grad{F_c}(s) = 0,
+it should be doable if we can efficiently find s' with s.grad{F_c}(s') = 0 and F_c(s') = 0,
+and then draw the line between s and s'...)
+
+(In both cases, we might need a quadratic extension of k in general.)
+
+(In the case of a single singularity, note that if say c_1=c_2=0, then x_1+x_2=0 --- a projective cone over the "algebraically remaining" singular cubic surface --- contains each singularity of V_c.
+But if at most one of the c_i's is 0, then it might be true that the singularity is necessarily A_1 or A_2.)
+
+(To transform two points to e_4, e_5: find a basis extending the original two points???
+EDIT: https://ask.sagemath.org/question/32607/can-sage-extend-bases/
+of course... we can just greedily complete the basis.)
+
+Compare with cleanline as a sanity check (just for correctness).
+
+Convenientline has the benefit of providing a proof sometimes, possibly almost always (if we can check a certain polynomial is absolutely irreducible)
+
+Note: If we can prove that the aboslute reducibility loci are Zariski closed, that could lend greater weight to numerical evidence (by Lang-Weil).
