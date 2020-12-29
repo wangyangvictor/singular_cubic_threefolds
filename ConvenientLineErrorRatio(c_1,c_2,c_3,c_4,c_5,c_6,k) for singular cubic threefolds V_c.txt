@@ -65,18 +65,22 @@ def ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k):
         ConvenientPts.extend([V(Sings[0]), V(Sings[1])])
     if len(Sings) == 1:
         u = Sings[0]
+        if c[0] == c[1] == 0:
+            t = [1, -1, u[2], u[3], u[4]]; print(F(t), sum(u[i]*F.gradient()[i](t) for i in range(5)))
+            ConvenientPts.extend([V(u), V(t)])
         for tries in range(10*q_new):
+            if len(ConvenientPts) == 2:
+                break
             t = [1, k_new.random_element(), k_new.random_element(), k_new.random_element(), x_5]
 #             We are not using the t[0] = 0 locus, but this shouldn't matter...
-            univar = R_small(F(list(t))); L = univar.roots()
+            univar = R_small(F(t)); L = univar.roots()
             if len(L) == 0:
                 continue
             t[4] = L[0][0]
             if all(t[i[0]]*u[i[1]] == t[i[1]]*u[i[0]] for i in cartesian_product([range(5), range(5)])):
                 continue
-            if sum(u[i]*F.gradient()[i](list(t)) for i in range(5)) == 0:
+            if sum(u[i]*F.gradient()[i](t) for i in range(5)) == 0:
                 ConvenientPts.extend([V(u), V(t)])
-                break
         if len(ConvenientPts) < 2:
             return "#Sings = 1; algorithm did not find a convenient line over k_new; abort."
 #     https://ask.sagemath.org/question/32607/can-sage-extend-bases/

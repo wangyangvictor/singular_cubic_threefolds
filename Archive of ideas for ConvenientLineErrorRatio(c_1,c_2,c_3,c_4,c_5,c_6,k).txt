@@ -1,0 +1,37 @@
+Here's an archive of attempts/ideas to modfiy/improve ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k)...
+
+---
+
+# Using resultants...
+
+    if len(Sings) == 1:
+        u = Sings[0]
+        Q = sum(u[i]*F.gradient()[i] for i in range(5))
+        resultant = F.resultant(Q,x_5); print(resultant)
+        for tries in range(10*q_new):
+            t = [k_new.random_element(), k_new.random_element(), k_new.random_element(), k_new.random_element(), x_5]
+            list_t = list(t)
+            if resultant(list_t) == 0:
+                uni_F = R_small(F(list_t)); L_F = uni_F.roots(multiplicities=False)
+                uni_Q = R_small(Q(list_t)); L_Q = uni_Q.roots(multiplicities=False)
+                # https://ask.sagemath.org/question/36829/finding-intersection-of-two-lists/
+                L_common = [r for r in L_F if r in L_Q]
+                if len(L_common) >= 1:
+                    t[4] = L_common[0]
+                    if any(t[i[0]]*u[i[1]] != t[i[1]]*u[i[0]] for i in cartesian_product([range(5), range(5)])):
+                        ConvenientPts.extend([V(u), V(t)])
+                        break
+
+---
+
+There might just be too few points over k_new in general (since the resultant is a surface of degree 6),
+but if we're willing to replace k_new with k_new.extension(2) (e.g. if k_new == k this should be OK),
+then if we can find a rational line on V(F), then the line would intersect V(Q) in points over the extension field.
+
+---
+
+Alternatively, if c_1 == c_2 == 0, then we can restrict to V(x_1+x_2):
+Note that V(F, x_1+x_2) is a cone over a singular cubic, and
+by the singularity (unique by assumption) is probably defined over k.
+
+---
