@@ -1456,7 +1456,7 @@ with (q_new, E_c(q_new)/q_new) = (103, 1)
 Preliminary results for Rand33Sing(103),
 with "Trial" requirement: len(Sing_signs) >= 1 and Test222(c) == False
 
-(Total trials below: 4+11 = 15)
+(Total trials below: 3+11 = 14)
 
 ---
 Trial: 1
