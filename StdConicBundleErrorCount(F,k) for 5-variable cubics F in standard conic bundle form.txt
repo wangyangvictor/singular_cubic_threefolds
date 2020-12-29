@@ -8,7 +8,14 @@
 # Optional: Load AbsFactorType(P_given, multiplicity, k_given)
 # (if interested in det(M) factorization).
 
-def StdConicBundleErrorCount(F_std, k_given):
+# https://stackoverflow.com/questions/9539921/how-do-i-create-a-python-function-with-optional-arguments
+# If conic_print == True: print f, (q_1,q_2), (l_1,l_2,l_3)
+# If bundle_print == True: print det(M) factorization, number of components, and (-delta_2) factorization
+# If avoid_count == True: return "Aborted calculation of E_X (avoid_count activated)."
+def StdConicBundleErrorCount(F_std, k_given, **print_options):
+    conic_print = print_options.get('conic_print', None)
+    bundle_print = print_options.get('bundle_print', None)
+    avoid_count = print_options.get('avoid_count', None)
     k = k_given; q = k.order()
     R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5')
 #     Even though
@@ -30,9 +37,10 @@ def StdConicBundleErrorCount(F_std, k_given):
     l_1 = F_std.coefficient({x_4:2, x_5:0})
     l_2 = F_std.coefficient({x_4:1, x_5:1}) / 2
     l_3 = F_std.coefficient({x_4:0, x_5:2})
-    print("f =", f)
-    print("(q_1,q_2) =", (q_1,q_2))
-    print("(l_1,l_2,l_3) =", (l_1,l_2,l_3))
+    if conic_print:
+        print("f =", f)
+        print("(q_1,q_2) =", (q_1,q_2))
+        print("(l_1,l_2,l_3) =", (l_1,l_2,l_3))
 
     J = R.ideal([f,q_1,q_2,l_1,l_2,l_3])
     if J.dimension() >= 3:
@@ -65,10 +73,12 @@ def StdConicBundleErrorCount(F_std, k_given):
     det = f*delta_1 - q_1*(q_1*l_3 - l_2*q_2) + q_2*(q_1*l_2 - l_1*q_2)
     S = PolynomialRing(k, 3, 'x_1,x_2,x_3')
     det = S(det); Main_info = AbsFactorType(det, 1, k)
-    print("det(M) factors absolutely as", Main_info)
-    print("V(det(M)) has", len(Main_info[0]), "geometric components")
-    print("-delta_2 =", -delta_2)
-    print("-delta_2 factors absolutely as", AbsFactorType(-S(delta_2), 1, k))
+    if bundle_print:
+        print("det(M) factors absolutely as", Main_info)
+        print("V(det(M)) has", len(Main_info[0]), "geometric components")
+        print("-delta_2 factors absolutely as", AbsFactorType(-S(delta_2), 1, k))
+    if avoid_count:
+        return "Aborted calculation of E_X (avoid_count activated)."
     C = Curve(det)
     lis = [P for P in C.rational_points()
            if (delta_1)(P[0],P[1],P[2],0,0) != 0

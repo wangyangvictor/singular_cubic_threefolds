@@ -32,7 +32,16 @@
 # # R(F*x_1^3)
 # R_small = R_sym.remove_var(x_1,x_2,x_3,x_4); print(R_sym, R_small)
 
-def ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k):
+# https://stackoverflow.com/questions/9539921/how-do-i-create-a-python-function-with-optional-arguments
+# If T_print == True: print transformation T*[x_1,...,x_5]
+# If F_print == True: print F_new
+# C_print, B_print, avoid_E: analogous to options for StdConicBundleErrorCount
+def ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k,**print_options):
+    T_print = print_options.get('T_print', None)
+    F_print = print_options.get('F_print', None)
+    C_print = print_options.get('C_print', None)
+    B_print = print_options.get('B_print', None)
+    avoid_E = print_options.get('avoid_E', None)
     q = k.order()
     c = [k(c_1/c_6), k(c_2/c_6), k(c_3/c_6), k(c_4/c_6), k(c_5/c_6), k(c_6/c_6)]
 #     Implicitly we assume c_6 != 0, and then renormalize c_6 to c[5] = 1.
@@ -91,12 +100,13 @@ def ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k):
             ConvenientPts.append(v); ConvenientBasis.append(v)
     ConvenientBasis.extend([ConvenientPts[0], ConvenientPts[1]])
     T = matrix(R_sym, ConvenientBasis).transpose(); v = vector(R_sym, [x_1, x_2, x_3, x_4, x_5])
-    print("Transformation matrix T =", T)
-    print("T*[x_1,...,x_5] =", [(T*v)[i] for i in range(5)])
     F_new = F([(T*v)[i] for i in range(5)])
-    print("F_new =", F_new)
+    if T_print:
+        print("T*[x_1,...,x_5] =", [(T*v)[i] for i in range(5)])
+    if F_print:
+        print("F_new =", F_new)
 
-    E_c = StdConicBundleErrorCount(F_new, k_new)
+    E_c = StdConicBundleErrorCount(F_new, k_new, conic_print=C_print, bundle_print=B_print, avoid_count=avoid_E)
     if (E_c in IntegerRing()):
         return (q_new, E_c/q_new)
     else:
