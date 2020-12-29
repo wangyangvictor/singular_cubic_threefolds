@@ -1,5 +1,13 @@
 Here's an archive of attempts/ideas to modfiy/improve ConvenientLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k)...
 
+(Note that in the len(Sings) >= 2 case, it is sometimes the case that the line through ConvenientPts is rational even though ConvenientPts is not... so in principle we could work over the rational field... but to keep the change of variables to [[e_4], [e_5]] as "convenint" as possible, maybe it's best to keep the algorithm as is.*
+
+*Except for a possible "optional argument" that could be implemented in the future.)
+
+===
+
+Ideas in len(Sings) == 1 case...
+
 ---
 
 # Using resultants...
@@ -35,3 +43,4 @@ Note that V(F, x_1+x_2) is a cone over a singular cubic, and
 by the singularity (unique by assumption) is probably defined over k.
 
 ---
+===
