@@ -30,6 +30,9 @@ def StdConicBundleErrorCount(F_std, k_given):
     l_1 = F_std.coefficient({x_4:2, x_5:0})
     l_2 = F_std.coefficient({x_4:1, x_5:1}) / 2
     l_3 = F_std.coefficient({x_4:0, x_5:2})
+    print("f =", f)
+    print("(q_1,q_2) =", (q_1,q_2))
+    print("(l_1,l_2,l_3) =", (l_1,l_2,l_3))
 
     J = R.ideal([f,q_1,q_2,l_1,l_2,l_3])
     if J.dimension() >= 3:
@@ -61,7 +64,11 @@ def StdConicBundleErrorCount(F_std, k_given):
     delta_3 = f*l_1 - q_1^2
     det = f*delta_1 - q_1*(q_1*l_3 - l_2*q_2) + q_2*(q_1*l_2 - l_1*q_2)
     S = PolynomialRing(k, 3, 'x_1,x_2,x_3')
-    det = S(det); print("det(M) factors absolutely as", AbsFactorType(det, 1, k))
+    det = S(det); Main_info = AbsFactorType(det, 1, k)
+    print("det(M) factors absolutely as", Main_info)
+    print("V(det(M)) has", len(Main_info[0]), "geometric components")
+    print("-delta_2 =", -delta_2)
+    print("-delta_2 factors absolutely as", AbsFactorType(-S(delta_2), 1, k))
     C = Curve(det)
     lis = [P for P in C.rational_points()
            if (delta_1)(P[0],P[1],P[2],0,0) != 0
