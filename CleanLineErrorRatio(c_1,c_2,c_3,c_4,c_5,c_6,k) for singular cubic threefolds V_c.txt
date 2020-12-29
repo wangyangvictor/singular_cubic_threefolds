@@ -7,12 +7,12 @@ def Delta(c_1,c_2,c_3,c_4,c_5,c_6):
 # with q an odd prime power q.
 # Output: the number E_c(q)/q.
 
-# Load StdConicBundleErrorCount(F,q)
+# Load StdConicBundleErrorCount(F_std, k_given)
 
-def CleanLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
-    k = GF(q,'a')
-    R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5');
-    x_1, x_2, x_3, x_4, x_5 = R.gens();
+def CleanLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,k):
+    q = k.order()
+    R = PolynomialRing(k, 5, 'x_1,x_2,x_3,x_4,x_5')
+    x_1, x_2, x_3, x_4, x_5 = R.gens()
 #     Originally we are interested in x'_1^3+...+x'_6^3 = c_1x'_1+...+c_6x'_6=0,
 #     which is essentially a cubic equation "F=0" in 5 variables (originally x'_1,...,x'_5, say).
 #     We write each x'_i as a linear combination of x_1,...,x_5,
@@ -21,14 +21,14 @@ def CleanLineErrorRatio(c_1,c_2,c_3,c_4,c_5,c_6,q):
     y_1 = (x_1 - R((c_2 - c_4)/(c_1 - c_6))*(x_2-x_4) - R((c_3 - c_5)/(c_1 - c_6))*(x_3-x_5))
     y_2 = (R(c_1/c_6)*x_1 + R((c_1*c_4 - c_2*c_6)/(c_1*c_6 - c_6^2))*x_2 + R((c_2 - c_4)/(c_1 - c_6))*x_4 + R((c_1*c_5 - c_3*c_6)/(c_1*c_6 - c_6^2))*x_3 + R((c_3 - c_5)/(c_1 - c_6))*x_5)
 #     Note that the formation of y_1,y_2 may yield division-by-zero errors if c_6*(c_1-c_6) is 0 in k.
-    F = (y_1^3 + (x_2-x_4)^3 + x_4^3 + (x_3-x_5)^3 + x_5^3 - y_2^3);
+    F = (y_1^3 + (x_2-x_4)^3 + x_4^3 + (x_3-x_5)^3 + x_5^3 - y_2^3)
 #     print(F);
 #     Here c_1*x'_1 + c_2*x'_2 + c_3*x'_3 + c_4*x'_4 + c_5*x'_5 + c_6*x'_6 = 0:
 #     print("c_1*x'_1 + c_2*x'_2 + c_3*x'_3 + c_4*x'_4 + c_5*x'_5 + c_6*x'_6 =",
-#          c_1*y_1 + c_2*(x_2-x_4) + c_3*(x_3-x_5) + c_4*x_4 + c_5*x_5 + c_6*(-y_2));
+#          c_1*y_1 + c_2*(x_2-x_4) + c_3*(x_3-x_5) + c_4*x_4 + c_5*x_5 + c_6*(-y_2))
 
-    E_c = StdConicBundleErrorCount(F,q)
+    E_c = StdConicBundleErrorCount(F,k)
     if (E_c in IntegerRing()):
-        return E_c/q;
+        return E_c/q
     else:
-        return E_c;
+        return E_c
