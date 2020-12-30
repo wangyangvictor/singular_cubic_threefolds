@@ -42,18 +42,18 @@ but which require loading **AbsFactorType**(P, mult, k).
 ("Archive of ideas for ConvenientLineErrorRatio..." sketches possible alternative versions of ConvenientLineErrorRatio.)
 
 ## Tests and data (preliminary)
-- Data for F_q-points on singular cubic threefolds V_c (hyperplane sections of Fermat).xlsx
+- **Data for F_q-points on singular cubic threefolds V_c (hyperplane sections of Fermat).xlsx**
 ensures that LazyErrorRatio, CleanLineErrorRatio, and ConvenientLineErrorRatio are consistent
 (i.e. give the same answer for E_X(q)/q).
-- Data for F_q-points on singular cubic threefolds X (in general).xlsx
+- **Data for F_q-points on singular cubic threefolds X (in general).xlsx**
 ensures that LazyErrorCount and StdConicBundleErrorCount are consistent.
-- Singular cubic threefold test 1.txt
+- **Singular cubic threefold test 1.txt**
 was used to produce part of "Data for F_q-points on singular cubic threefolds V_c (hyperplane sections of Fermat).xlsx".
-- Singular cubic threefold test 2.txt
+- **Singular cubic threefold test 2.txt**
 was used to produce part of "Data for F_q-points on singular cubic threefolds X (in general).xlsx".
-- Singular cubic threefold tests 3.?
+- **Singular cubic threefold tests 3.?**
 use CleanLineErrorRatio to provide some preliminary data on V_c.
-- Singular cubic threefold tests 4.?
+- **Singular cubic threefold tests 4.?**
 use ConvenientLineErrorRatio to provide some preliminary data on V_c
 (including some useful theoretical data not detected by CleanLineErrorRatio).
 
