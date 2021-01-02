@@ -10,9 +10,10 @@ but the underlying techniques are more general.
 Our methods range from naive "for loops"
 (general but inefficient for all but small q's)
 to more refined techniques based on writing X as a "conic bundle"
-(as in https://github.com/alaface/CubLin, but more generally).
+(as in https://github.com/alaface/CubLin from the paper https://arxiv.org/abs/1510.05803, but more generally).
 
 ## Main functions
+All code so far is written in SageMath.
 The file finder
 https://github.com/wangyangvictor/singular_cubic_threefolds/find/main
 links to the following functions,
